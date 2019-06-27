@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>upload-labs前八关总结 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前八关的问题分别如下"><span class="toc-text">前八关的问题分别如下</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#简单的文件名处理方法"><span class="toc-text">简单的文件名处理方法</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">upload-labs前八关总结</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">August 25, 2018&nbsp;&nbsp;14:07:32</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>网上有很多的通关教程,但是单纯的通关并没有太大意义,于是开始在源码层分析漏洞成因</p>
+<a id="more"></a>
+<p>参考答案:<a href="https://xz.aliyun.com/t/2435" target="_blank" rel="noopener">https://xz.aliyun.com/t/2435</a></p>
+<h2 id="前八关的问题分别如下"><a href="#前八关的问题分别如下" class="headerlink" title="前八关的问题分别如下"></a>前八关的问题分别如下</h2><p>pass-01 仅在前端过滤并未对传入后端的数据进行过滤,等于没过滤而产生漏洞<br>pass-02 仅在后端判断了Content-Type,未对文件后缀进行判断导致修改Content-Type: image/jpeg,便可突破限制<br>pass-03 不完善的黑名单机制,以至于可以使用例如php2,php3,pht等php的别名进行绕过,<br>pass-04 对大部分的php,asp等别名进行过滤,也对文件名进行例如去空格等处理,未过滤.htaccess文件,可上传含有内容为SetHandler application/x-httpd-php的.htaccess,使得所有文件都可以按照php文件执行<br>pass-05 未对文件名进行大小写转换<br>pass-06 未对文件末尾的空格进行处理<br>pass-07 未对文件末尾的. 进行处理<br>pass-08 未对::$DATA字符串进行处理,</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>1.对文件名的简单处理是尤为重要的,可以利用window的特性绕过一些判断机制<br>2.黑名单机制安全性是脆弱的<br>3.前端过滤而后端未过滤等于没过滤<br>4.可利用.htaccess文件使得任意文件按照php的方式执行 SetHandler application/x-httpd-php</p>
+<h2 id="简单的文件名处理方法"><a href="#简单的文件名处理方法" class="headerlink" title="简单的文件名处理方法"></a>简单的文件名处理方法</h2><pre><code>$file_name = trim($_FILES[&apos;upload_file&apos;][&apos;name&apos;]);
+$file_name = deldot($file_name);//删除文件名末尾的点
+$file_ext = strrchr($file_name, &apos;.&apos;);
+$file_ext = strtolower($file_ext); //转换为小写
+$file_ext = str_ireplace(&apos;::$DATA&apos;, &apos;&apos;, $file_ext);//去除字符串::$DATA
+$file_ext = trim($file_ext); //收尾去空</code></pre><p>由于对php语言并不了解,有些其他的突破方法并不能理解.看来php还是得学习一波诶.</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/08/25/upload-labs/">http://yoursite.com/2018/08/25/upload-labs/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/08/27/upload-libs/">upload_labs九到十六总结</a>
+            
+            
+            <a class="next" rel="next" href="/2018/08/24/pwn/">简单pwn题入门学习</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

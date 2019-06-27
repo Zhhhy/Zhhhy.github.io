@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>图解TCP/IP学习笔记（一） | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第一章"><span class="toc-text">第一章</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#协议"><span class="toc-text">协议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#随处可见的协议"><span class="toc-text">随处可见的协议</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#协议的必要性"><span class="toc-text">协议的必要性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#分组交换协议"><span class="toc-text">分组交换协议</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#协议由谁来定"><span class="toc-text">协议由谁来定</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#协议标准化"><span class="toc-text">协议标准化</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#协议分层"><span class="toc-text">协议分层</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#OSI参考模型中各个分层的作用"><span class="toc-text">OSI参考模型中各个分层的作用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#传输方式的分类"><span class="toc-text">传输方式的分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#分组交换（蓄积交换）"><span class="toc-text">分组交换（蓄积交换）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#根据接收端方式分类"><span class="toc-text">根据接收端方式分类</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#地址"><span class="toc-text">地址</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#地址的唯一性"><span class="toc-text">地址的唯一性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#地址的层次性"><span class="toc-text">地址的层次性</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#网络构成要素"><span class="toc-text">网络构成要素</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#通信媒介与数据链路"><span class="toc-text">通信媒介与数据链路</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#网卡（网络接口卡）"><span class="toc-text">网卡（网络接口卡）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#中继器"><span class="toc-text">中继器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#网桥-2层交换机"><span class="toc-text">网桥/2层交换机</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#路由器-3层交换机"><span class="toc-text">路由器/3层交换机</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-7层交换机"><span class="toc-text">4~7层交换机</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第二章"><span class="toc-text">第二章</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#TCP-IP分层模型"><span class="toc-text">TCP/IP分层模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#硬件（物理层）"><span class="toc-text">硬件（物理层）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#网络接口层（数据链路层）"><span class="toc-text">网络接口层（数据链路层）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#互联网层-网络层"><span class="toc-text">互联网层(网络层)</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#IP协议"><span class="toc-text">IP协议</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#ICMP协议"><span class="toc-text">ICMP协议</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#APR协议"><span class="toc-text">APR协议</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#传输层"><span class="toc-text">传输层</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#TCP协议"><span class="toc-text">TCP协议</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#UDP协议"><span class="toc-text">UDP协议</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#应用层（会话层以上的分层）"><span class="toc-text">应用层（会话层以上的分层）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第三章"><span class="toc-text">第三章</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据链路层的作用"><span class="toc-text">数据链路层的作用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#数据链路相关技术"><span class="toc-text">数据链路相关技术</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#MAC地址"><span class="toc-text">MAC地址</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#共享介质型网络"><span class="toc-text">共享介质型网络</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#非共享介质网络"><span class="toc-text">非共享介质网络</span></a></li></ol></li></ol></li></ol></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">图解TCP/IP学习笔记（一）</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">January 18, 2019&nbsp;&nbsp;13:47:24</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>为啥突然想着学点基础的协议知识呢？一方面是想着为了之后入门数据包分析做知识储备，另一方面为了自己的一个小想法（做一个简单的web入侵检测系统）。虽然不知道对上述两个方面有没有用吧，技多不压身吧。</p>
+<a id="more"></a>
+
+<h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><p>前面几小节介绍了计算机的发展历程，如何从单机模式再需求不断提高的推动下，逐渐实现的网络互连。</p>
+<h3 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h3><h4 id="随处可见的协议"><a href="#随处可见的协议" class="headerlink" title="随处可见的协议"></a>随处可见的协议</h4><p>在计算机网络与信息通信领域里，人们经常提及“协议”一词。互联网中常用的具有代表性的协议有IP、TCP、HTTP等。而LAN（局域网）中常用的协议有IPX/SPX等。</p>
+<p><strong>“计算机网络体系结构”将这些协议进行了系统的归纳。TCP/IP就是IP、TCP、HTTP等协议的集合。</strong></p>
+<p><img src="Tcp-ip/1.png" alt="1547793423938"></p>
+<h4 id="协议的必要性"><a href="#协议的必要性" class="headerlink" title="协议的必要性"></a>协议的必要性</h4><p>简单来说，<strong>协议就是计算机与计算机之间通过网络实现通信时事先达成的一种“约定”。</strong>这种约定使得，不同厂商的设备，不同的CPU以及不同的操作系统组成的计算机，都能够遵守同样的协议实现通信。<strong>两台计算机之间必须能够支持相同的协议，并遵循相同协议进行处理才能够通信。</strong></p>
+<h4 id="分组交换协议"><a href="#分组交换协议" class="headerlink" title="分组交换协议"></a>分组交换协议</h4><p><strong>分组交换是指将大数据分割成一个个叫做包的较小单位进行传输的方法。</strong></p>
+<p> <img src="Tcp-ip/2.png" alt="1547794243897"></p>
+<p>​    既然将一个大数据包被拆分成许多小包，必然需要进行编号，目标主机以此作为依据拼接成大数据包。报文首部提供了以上信息，类似于邮件的封面，填写了寄件地址，收件地址等信息。而能<strong>够通信的每台计算机则需要根据协议来构造报文首部和读取报文首部内容</strong>。</p>
+<h3 id="协议由谁来定"><a href="#协议由谁来定" class="headerlink" title="协议由谁来定"></a>协议由谁来定</h3><h4 id="协议标准化"><a href="#协议标准化" class="headerlink" title="协议标准化"></a>协议标准化</h4><p>为了解决协议标准化的问题，ISO（国际标准化组织）指定了一个国际标准OSI（Open System Intercon-nection，开放式通信系统互联参考模型），对协议进行标准化。<strong>虽然OSI协议并没有得到普及，但是在OSI协议设计之初作为知道方针的OSI参考模型却常用于网络协议的制定之中。</strong></p>
+<p>*<em>TCP/IP并非ISO所制定的某种国际标准。而是由IETF所建议的、致力于推进起标准化作业的一种协议。 *</em>TCP/IP作为互联网上的一种标准，也作为业界标准，已经成为全世界最广泛应的通信协议。</p>
+<p><strong>协议的标准化也使所有遵循协议的设备不再因为计算机硬件或者操作系统的差异无法通信。因此，协议的标准化也推动了计算机网络的普及</strong></p>
+<h3 id="协议分层"><a href="#协议分层" class="headerlink" title="协议分层"></a>协议分层</h3><p><strong>OSI模型将通信协议中必要的功能分为7层。同这些分成比较复杂的网络协议更加简单化</strong></p>
+<p>每个分层的接收由它下一层提供的特定服务，并且负责为自己上一层提供特定的服务。上下层之间进行交互时所遵循的约定叫做<em>“接口”</em>。同一层之间的交互所遵循的约定叫做<em>“协议“</em></p>
+<p><img src="Tcp-ip/3.png" alt="1547795533947"></p>
+<p>OSI参考模型：</p>
+<p><img src="Tcp-ip/5.png" alt="1547797897374"></p>
+<h4 id="OSI参考模型中各个分层的作用"><a href="#OSI参考模型中各个分层的作用" class="headerlink" title="OSI参考模型中各个分层的作用"></a>OSI参考模型中各个分层的作用</h4><p><img src="Tcp-ip/6.png" alt="1547798148934"></p>
+<ul>
+<li>应用层<ul>
+<li>为应用程序提供服务并规定应用程序中通信相关的细节。包括文件传输、电子邮件、远程登录等协议。</li>
+</ul>
+</li>
+<li>表示层<ul>
+<li>将应用处理的信息转换为适合网络传输的格式。或者将下一层的数据转换为上层能够处理的格式。因此它负责数据格式的转换。</li>
+</ul>
+</li>
+<li>会话层<ul>
+<li>负责建立和断开通信链接（数据流动的逻辑通路），以及数据的分割等数据传输相关的管理。</li>
+</ul>
+</li>
+<li>传输层<ul>
+<li>起着可靠传输的作用。只在通信双方节点上进行处理，而无需在路由器上处理。</li>
+</ul>
+</li>
+<li>网络层<ul>
+<li>将数据传输到目标地址。目标地址可以是多个网络通过路由器连接而成的某一个地址。这层主要负责寻址和路由选择。</li>
+</ul>
+</li>
+<li>数据链路层<ul>
+<li>负责物理层面上互连的、节点之间的通信传输。</li>
+<li>将0、1序列划分为具有意义的数据帧传送给对方(数据帧的生成与接受)</li>
+</ul>
+</li>
+<li>物理层<ul>
+<li>负责比特流与高低电压以及光的闪灭之间的互换</li>
+</ul>
+</li>
+</ul>
+<h3 id="传输方式的分类"><a href="#传输方式的分类" class="headerlink" title="传输方式的分类"></a>传输方式的分类</h3><ul>
+<li>面向有连接型<ul>
+<li>在发送数据之前，得先建立收发主机之间的一条通路。</li>
+</ul>
+</li>
+<li>面向无连接型<ul>
+<li>不要求建立连接，任意时刻自有发送数据</li>
+</ul>
+</li>
+</ul>
+<h4 id="分组交换（蓄积交换）"><a href="#分组交换（蓄积交换）" class="headerlink" title="分组交换（蓄积交换）"></a>分组交换（蓄积交换）</h4><p><strong>让连接到通信电路的计算机将所要发送的数据分成多个数据包，按照一定的顺序排列之后分别发送。</strong></p>
+<p>发送端计算机将数据分组发送给路由器，路由器收到这些分组数据以后，存到自己的缓存区，然后再转发给目标计算机。</p>
+<p>在分组交换中，路由器之间通常只有一条通路，所有数据包都共享这条通路。这就与电路交换独占整条通路有着极大的差别。也正因此，电路交换的传输速度不会变化，而分组交换的传输速度随着网络的拥塞程度时刻在变化着。另外，如若路由器的缓存区溢满，则会导致数据包丢失、无法发送到目标计算机等问题。    </p>
+<h4 id="根据接收端方式分类"><a href="#根据接收端方式分类" class="headerlink" title="根据接收端方式分类"></a>根据接收端方式分类</h4><ul>
+<li>单播（Unicast）：一对一通信，例如电话。</li>
+<li>广播（Broadcast）：消息将从一台主机，发送到多个与之想连接的目标主机。</li>
+<li>多播（Multicast）：多播与广播类似，不同点在于多播要限定某一组主机作为接收端。</li>
+<li>任播（Anycast）：任播是指在特定多台主机中选出一台作为接收端的一种通信方式。任播通信从目标主机群中选出一台最符合网络条件的主机作为目标主机。通常，所被选中的特定主机将返回一个单播信号，之后发送端只跟这台主机通信。</li>
+</ul>
+<h3 id="地址"><a href="#地址" class="headerlink" title="地址"></a>地址</h3><p>在实际的网络通信中，每一层的协议所使用的地址不尽相同。</p>
+<h4 id="地址的唯一性"><a href="#地址的唯一性" class="headerlink" title="地址的唯一性"></a>地址的唯一性</h4><p>在一个通信网络中不允许有两个相同地址的通信主体存在。这就是地址的唯一性</p>
+<h4 id="地址的层次性"><a href="#地址的层次性" class="headerlink" title="地址的层次性"></a>地址的层次性</h4><p>当地址总数并不是很多的情况下，有了唯一地址就可以定位相互通信的主体。但在地址总数越来越多的情况下，就需要考虑高效的找出通信的目标地址。因此，地址除了唯一性之外，还要有层次性。</p>
+<p>MAC地址和IP地址在标示一个通信主体时虽然都具有唯一性，但仅有IP地址具有层次性。</p>
+<p>虽然MAC地址是真正负责最终通信的地址，但是在实际寻址的过程中，IP地址确实必不可少的。</p>
+<p><img src="Tcp-ip/7.png" alt="1547814272004"></p>
+<h3 id="网络构成要素"><a href="#网络构成要素" class="headerlink" title="网络构成要素"></a>网络构成要素</h3><h4 id="通信媒介与数据链路"><a href="#通信媒介与数据链路" class="headerlink" title="通信媒介与数据链路"></a>通信媒介与数据链路</h4><p>计算机之间通过电缆相互连接。</p>
+<p>电缆又分为双绞线电缆、光纤电缆、同轴电缆、串行电缆等。</p>
+<p><strong>不同的数据链路使用的电缆不同</strong></p>
+<p>媒介本身可以分为电波、微波等不同类型的电磁波</p>
+<h4 id="网卡（网络接口卡）"><a href="#网卡（网络接口卡）" class="headerlink" title="网卡（网络接口卡）"></a>网卡（网络接口卡）</h4><p>任何一台计算机接入网络是，必须要使用网卡。</p>
+<h4 id="中继器"><a href="#中继器" class="headerlink" title="中继器"></a>中继器</h4><p>是在OSI模型的第一层，也就是物理层上延长网络的设备。由电缆传过来的电信号或者光信号经由中继器的波形调整和放大再传给另一个电缆。</p>
+<ul>
+<li>中继器是对减弱的信号进行放大和发送的设备</li>
+<li>中继器通过物理层的连接延长网络</li>
+<li>及时数据链路层出现某些错误，中继器仍然转发数据</li>
+<li>中继器无法改变传输速度</li>
+</ul>
+<h4 id="网桥-2层交换机"><a href="#网桥-2层交换机" class="headerlink" title="网桥/2层交换机"></a>网桥/2层交换机</h4><p>网桥是在OSI模型的第二层，数据链路层上连接两个网络设备。根据物理地址(MAC)进行处理。</p>
+<ul>
+<li>网桥根据数据帧的内容转发数据给相邻的其他网络</li>
+<li>网桥没有连接网段个数的限制</li>
+<li>网桥基本上用于连接类型相同的网络。但是也可以连接传输速率不同的网络</li>
+</ul>
+<h4 id="路由器-3层交换机"><a href="#路由器-3层交换机" class="headerlink" title="路由器/3层交换机"></a>路由器/3层交换机</h4><p>路由器是在OSI模型的第三层，网络层上连接两个网络、并对分组报文进行转发的设备。根据IP进行处理。</p>
+<ul>
+<li>路由器是连接网络与网络的设备</li>
+<li>可以将分组报文发送给另一个目标路由器地址</li>
+<li>基本上可以连接任意两个数据链路</li>
+</ul>
+<h4 id="4-7层交换机"><a href="#4-7层交换机" class="headerlink" title="4~7层交换机"></a>4~7层交换机</h4><p>负责处理 OSI模型中从传输层至应用层的数据。</p>
+<h2 id="第二章"><a href="#第二章" class="headerlink" title="第二章"></a>第二章</h2><h3 id="TCP-IP分层模型"><a href="#TCP-IP分层模型" class="headerlink" title="TCP/IP分层模型"></a>TCP/IP分层模型</h3><p><img src="Tcp-ip/8.png" alt="1547816828098"></p>
+<h4 id="硬件（物理层）"><a href="#硬件（物理层）" class="headerlink" title="硬件（物理层）"></a>硬件（物理层）</h4><p>TCP/IP的最底层是负责数据传输的硬件。它的内容一直无法同意的定义。</p>
+<p>因为TCP/IP是在网络互连的设备之间能够通信的前提下才被提出的协议。</p>
+<h4 id="网络接口层（数据链路层）"><a href="#网络接口层（数据链路层）" class="headerlink" title="网络接口层（数据链路层）"></a>网络接口层（数据链路层）</h4><p>网络接口层利用以太网中的数据链路层进行通信，因此属于接口层。可以认为是NIC的驱动程序。</p>
+<h4 id="互联网层-网络层"><a href="#互联网层-网络层" class="headerlink" title="互联网层(网络层)"></a>互联网层(网络层)</h4><p>互联网层使用IP协议，它相当于OSI模型中的第3层网络层。IP协议基于IP地址转发分包数据。</p>
+<p>TCP/IP分层中的互联网层与传输层的功能通常有操作系统提供。尤其是路由器，它必须得实现通过互联网层转发分组数据包的功能。此外，连接互联网的所有主机跟路由器必须都实现IP的功能。其他连接互联网的网络设备（中继器、网桥、集线器）就不一定实现IP或TCP的功能。</p>
+<h5 id="IP协议"><a href="#IP协议" class="headerlink" title="IP协议"></a>IP协议</h5><p>IP是跨越网络传送数据包，使整个互联网都能收到数据的协议。使用IP地址作为主机的标示。</p>
+<p>IP还隐含数据链路层的功能，不论经过怎样的底层数据链路都能实现通信。</p>
+<p>IP是分组交换的一种协议，但无重发机制。属于不可靠传输。</p>
+<h5 id="ICMP协议"><a href="#ICMP协议" class="headerlink" title="ICMP协议"></a>ICMP协议</h5><p>IP数据包在发送中遇到异常则会返回一个异常的通知。常用来诊断网络状况。</p>
+<h5 id="APR协议"><a href="#APR协议" class="headerlink" title="APR协议"></a>APR协议</h5><p>可以将分组数据包的IP地址中解析出物理地址（MAC地址）的一种协议。</p>
+<h4 id="传输层"><a href="#传输层" class="headerlink" title="传输层"></a>传输层</h4><p>TCP/IP传输层有两个具有代表的协议。该层功能本身与OSI参考的模型中的传输层类似。</p>
+<p>传输层最主要的功能是能够让应用程序之间实现通信。识别应用程序的是端口号。</p>
+<h5 id="TCP协议"><a href="#TCP协议" class="headerlink" title="TCP协议"></a>TCP协议</h5><p>TCP协议是一种面向有连接的传输层协议。能够处理丢包、传输顺序混乱等异常情况。并且拥有利用带宽，缓解网络拥堵。</p>
+<p>但，建立和断开连接，至少需要7次发包收包，导致网络流量浪费。</p>
+<h5 id="UDP协议"><a href="#UDP协议" class="headerlink" title="UDP协议"></a>UDP协议</h5><p>UDP协议是一种面向无连接的传输层协议。不关心对方是否接收到数据。</p>
+<p>UDP常用于分组数据较少或多播、广播通信以及视频通信等多媒体领域。</p>
+<h4 id="应用层（会话层以上的分层）"><a href="#应用层（会话层以上的分层）" class="headerlink" title="应用层（会话层以上的分层）"></a>应用层（会话层以上的分层）</h4><p>TCP/IP的应用层中包含了OSI中会话层、表示层、应用层的功能。</p>
+<p>TCP/IP应用的架构大多数都是客户端/服务器模式。</p>
+<p>浏览器与服务端之间通信所用的是HTTP协议(HyperText Transfer Protocol)。</p>
+<p>传输数据的主要格式是HTML(HyperText Markup Language)。HTTP属于应用层协议。HTML属于表示层协议。</p>
+<p>其中还包含了许多协议。例如，FTP、SSH等。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>TCP分层模型，每一层都有自己的首部，记录着使用什么协议、发送到何处等的信息。发送时，一层一层的加上自己的首部。接收时，再一层一层的脱去首部。</p>
+<h2 id="第三章"><a href="#第三章" class="headerlink" title="第三章"></a>第三章</h2><h3 id="数据链路层的作用"><a href="#数据链路层的作用" class="headerlink" title="数据链路层的作用"></a>数据链路层的作用</h3><p><strong>数据链路层有时也指以太网、无线局域网等通信手段</strong></p>
+<p><strong>数据链路层的协议规定了通过通信媒介互连的设备之间传输规范，数据链路层的基本单位是“帧”</strong></p>
+<h4 id="数据链路相关技术"><a href="#数据链路相关技术" class="headerlink" title="数据链路相关技术"></a>数据链路相关技术</h4><h5 id="MAC地址"><a href="#MAC地址" class="headerlink" title="MAC地址"></a>MAC地址</h5><p>MAC地址用于识别数据链路中互连的节点。任何一个网卡的MAC地址都是唯一的，在全世界都不会重复。</p>
+<h5 id="共享介质型网络"><a href="#共享介质型网络" class="headerlink" title="共享介质型网络"></a>共享介质型网络</h5><p>从通信介质的使用方法上看，网络可以分为共享型介质和非共享型介质。</p>
+<p>共享型介质就是多个设备共享一个通信介质的一种网络。最早的以太网和FDDI就是介质共享型网络。设备之间使用同一个载波信道进行发送和接受，基本采用半双工通信方式，有必要对介质进行访问控制。</p>
+<p>介质访问控制方式：一种是争用，另一种则是令牌传递</p>
+<ul>
+<li>争用方式（Contention）争夺数据传输的权利。又称CSMA（载波监听多路访问）。先到先得的占用信道。多个站同时发送会冲突。导致网络拥堵和性能下降<ul>
+<li>改良的CSMA的一种方式：CSMA/CD方式。要求每个站点提前检查<ul>
+<li>如果载波信道上没有数据流动，则任何站点可以发送数据</li>
+<li>检查是否会发生冲突。一旦发生冲突，放弃发送数据，并且立即释放载波信道。</li>
+<li>放弃后，随机延时一段时间，重新争夺，重发帧。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>令牌传递:不会发生冲突，每个站都有平等机会。拿到令牌后才可以发送数据。无法百分百利用资源。</li>
+</ul>
+<h5 id="非共享介质网络"><a href="#非共享介质网络" class="headerlink" title="非共享介质网络"></a>非共享介质网络</h5><p>非共享介质网络，是对介质采取专用的一种传输控制方式。</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2019/01/18/Tcp-ip/">http://yoursite.com/2019/01/18/Tcp-ip/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/网络协议/"># 网络协议</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/03/12/usepython/">Python办公系列（操作excel，发送文件）</a>
+            
+            
+            <a class="next" rel="next" href="/2019/01/18/分割篇/">分割篇</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

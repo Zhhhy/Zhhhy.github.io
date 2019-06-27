@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>Python办公系列（操作excel，发送文件） | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#操作PDF文件"><span class="toc-text">操作PDF文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#将多个pdf文件合成一个新的pdf"><span class="toc-text">将多个pdf文件合成一个新的pdf</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#给pdf文件加水印"><span class="toc-text">给pdf文件加水印</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#操作Excel"><span class="toc-text">操作Excel</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#对当前表单的单元格的各种操作"><span class="toc-text">对当前表单的单元格的各种操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#对数据进行读取，并且保存成字典"><span class="toc-text">对数据进行读取，并且保存成字典</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#保存新的文件"><span class="toc-text">保存新的文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一个小demo-统计计算全校各学院男女平均身高，并且生成图表"><span class="toc-text">一个小demo-统计计算全校各学院男女平均身高，并且生成图表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用python发送QQ邮件（简单版）"><span class="toc-text">使用python发送QQ邮件（简单版）</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Python办公系列（操作excel，发送文件）</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">March 12, 2019&nbsp;&nbsp;19:55:36</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>日常遇到的一些小问题，尝试着使用python的方式解决。</p>
+<a id="more"></a>
+
+<h2 id="操作PDF文件"><a href="#操作PDF文件" class="headerlink" title="操作PDF文件"></a>操作PDF文件</h2><h3 id="将多个pdf文件合成一个新的pdf"><a href="#将多个pdf文件合成一个新的pdf" class="headerlink" title="将多个pdf文件合成一个新的pdf"></a>将多个pdf文件合成一个新的pdf</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> PyPDF2</span><br><span class="line"></span><br><span class="line"><span class="comment">## 讲多个PDF合成一个PDF</span></span><br><span class="line"><span class="comment"># 将文件名收集一个list</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hec</span><span class="params">(filenames)</span>:</span></span><br><span class="line">    <span class="comment">## 多个PDF合成一个PDF</span></span><br><span class="line">    <span class="comment"># 将文件名收集一个list</span></span><br><span class="line">    merger = PyPDF2.PdfFileMerger()</span><br><span class="line">    <span class="keyword">for</span> filename <span class="keyword">in</span> filenames :</span><br><span class="line">        merger.append(PyPDF2.PdfFileReader(filename))</span><br><span class="line"></span><br><span class="line">    merger.write(<span class="string">'新.pdf'</span>)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line"><span class="comment">## 文件要放在程序的同一个目录里</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="给pdf文件加水印"><a href="#给pdf文件加水印" class="headerlink" title="给pdf文件加水印"></a>给pdf文件加水印</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add_sy</span><span class="params">(filenames,sy)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> filename <span class="keyword">in</span> filenames:</span><br><span class="line">        <span class="comment">#二进制的形式打开pdf文件</span></span><br><span class="line">        <span class="keyword">with</span> open(filename,<span class="string">'rb'</span>) <span class="keyword">as</span> pdfFile:</span><br><span class="line">            <span class="comment">#读取pdf文件</span></span><br><span class="line">            pdfReader = PyPDF2.PdfFileReader(pdfFile)</span><br><span class="line">            <span class="comment">#取出第一页</span></span><br><span class="line">            minutesFirstPage = pdfReader.getPage(<span class="number">0</span>) <span class="comment">#取第一页</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">with</span> open(sy,<span class="string">'rb'</span>) <span class="keyword">as</span> markFile:</span><br><span class="line">                <span class="comment">#二进制的形式打开水印文件，读取水印文件</span></span><br><span class="line">                pdfwaterReader = PyPDF2.PdfFileReader(markFile)</span><br><span class="line">                <span class="comment">#将水印页面添加上</span></span><br><span class="line">                minutesFirstPage.mergePage(pdfwaterReader.getPage(<span class="number">0</span>))</span><br><span class="line">                pdfWriter = PyPDF2.PdfFileWriter()</span><br><span class="line">                <span class="comment">#生产新的文件</span></span><br><span class="line">                pdfWriter.addPage(minutesFirstPage)</span><br><span class="line">                <span class="comment">#将剩余页面加入新文件</span></span><br><span class="line">                <span class="keyword">for</span> pageNum <span class="keyword">in</span> range(<span class="number">1</span>,pdfReader.numPages):</span><br><span class="line">                    <span class="comment">#取得每一页的对象</span></span><br><span class="line">                    pageObj = pdfReader.getPage(pageNum)</span><br><span class="line">                    <span class="comment">#加入新文件</span></span><br><span class="line">                    pdfWriter.addPage(pageObj)</span><br><span class="line">                <span class="keyword">with</span> open(<span class="string">'new pdf.pdf'</span>,<span class="string">'wb'</span>) <span class="keyword">as</span> resultFile:</span><br><span class="line">                    pdfWriter.write(resultFile)</span><br><span class="line">                 <span class="comment">#输出新文件</span></span><br><span class="line">    <span class="keyword">return</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="操作Excel"><a href="#操作Excel" class="headerlink" title="操作Excel"></a>操作Excel</h2><h3 id="对当前表单的单元格的各种操作"><a href="#对当前表单的单元格的各种操作" class="headerlink" title="对当前表单的单元格的各种操作"></a>对当前表单的单元格的各种操作</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> openpyxl</span><br><span class="line"><span class="comment">#打开一个exl文件</span></span><br><span class="line">wb </span><br><span class="line">print(wb.sheetnames)</span><br><span class="line"><span class="comment">#打印出所有表单项</span></span><br><span class="line"><span class="keyword">for</span> sheet <span class="keyword">in</span> wb:</span><br><span class="line">    print(sheet.title)</span><br><span class="line"><span class="comment">## 增加表单项</span></span><br><span class="line"><span class="comment">#mySheet = wb.create_sheet('test_sheet')</span></span><br><span class="line"><span class="comment">#活跃的表单</span></span><br><span class="line">active_ws = wb.active</span><br><span class="line">print(active_ws)</span><br><span class="line"><span class="comment">### 选取特定的单元格</span></span><br><span class="line"><span class="comment"># print(active_ws['A1'].value)</span></span><br><span class="line"><span class="comment"># print(active_ws['B6'].value)</span></span><br><span class="line"><span class="comment">#打印出A1单元格的第几行第几列</span></span><br><span class="line">b = active_ws[<span class="string">'A1'</span>]</span><br><span class="line">print(<span class="string">'Row &#123;&#125;,Colum &#123;&#125;'</span>.format(b.row,b.column))</span><br><span class="line"><span class="comment">#打印出当前单元格和值</span></span><br><span class="line">print(<span class="string">'Cell &#123;&#125; is &#123;&#125;'</span>.format(b.coordinate,b.value))</span><br><span class="line"><span class="comment">#另一种取出单元格</span></span><br><span class="line">print(active_ws.cell(row=<span class="number">3</span>,column=<span class="number">3</span>).value)</span><br><span class="line"><span class="comment"># 打印出第1-8行的第3列</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">8</span>):</span><br><span class="line">    print(active_ws.cell(row=i,column=<span class="number">3</span>).value)</span><br><span class="line"></span><br><span class="line">colC = active_ws[<span class="string">'C'</span>]</span><br><span class="line">print(<span class="string">"hhhhh"</span>,colC[<span class="number">2</span>].value)</span><br><span class="line"></span><br><span class="line"><span class="comment">### 打印出3到5行A到C列的所有数据</span></span><br><span class="line">row_range = active_ws[<span class="number">3</span>:<span class="number">5</span>]</span><br><span class="line">col_range = active_ws[<span class="string">'A:C'</span>]</span><br><span class="line"><span class="keyword">for</span> row <span class="keyword">in</span> row_range:</span><br><span class="line">    <span class="keyword">for</span> col <span class="keyword">in</span> row:</span><br><span class="line">        print(col.value,end=<span class="string">' '</span>)</span><br><span class="line">    print()</span><br><span class="line"><span class="comment">## 打印出表格是几乘几的</span></span><br><span class="line">print(<span class="string">'max row &#123;&#125;，max column &#123;&#125;'</span>.format(active_ws.max_row,active_ws.max_column))</span><br></pre></td></tr></table></figure>
+
+<h3 id="对数据进行读取，并且保存成字典"><a href="#对数据进行读取，并且保存成字典" class="headerlink" title="对数据进行读取，并且保存成字典"></a>对数据进行读取，并且保存成字典</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> openpyxl,pprint</span><br><span class="line"><span class="comment">## 读取Excl文件</span></span><br><span class="line">print(<span class="string">"正打开excl"</span>)</span><br><span class="line">wb = openpyxl.load_workbook(<span class="string">'censuspopdata.xlsx'</span>)</span><br><span class="line"><span class="comment">#当前活跃的表单</span></span><br><span class="line">sheet = wb.active</span><br><span class="line">print(<span class="string">"当前的表单:&#123;&#125;"</span>.format(sheet))</span><br><span class="line"><span class="comment">#初始化数据列表</span></span><br><span class="line">InitData = &#123;&#125;</span><br><span class="line"><span class="comment">#因为第一行是标题。。看情况改</span></span><br><span class="line"><span class="keyword">for</span> row <span class="keyword">in</span> range(<span class="number">2</span>,sheet.max_row):</span><br><span class="line">    <span class="comment">#取出每一行的每一个元素</span></span><br><span class="line">    data1=sheet[<span class="string">'B'</span>+str(row)].value</span><br><span class="line">    data2=sheet[<span class="string">'C'</span>+str(row)].value</span><br><span class="line">    data3=sheet[<span class="string">'D'</span>+str(row)].value</span><br><span class="line">    <span class="comment">#setdefault函数当键值不存在的时候加入一个新的键</span></span><br><span class="line">    InitData.setdefault(data1,&#123;&#125;)</span><br><span class="line">    InitData[data1].setdefault(data2,&#123;<span class="string">'tract'</span>:<span class="number">0</span>,<span class="string">'pop'</span>:<span class="number">0</span>&#125;)</span><br><span class="line">    <span class="comment">#不管存不存在 tract都加了1</span></span><br><span class="line">    InitData[data1][data2][<span class="string">'tract'</span>] += <span class="number">1</span></span><br><span class="line">    InitData[data1][data2][<span class="string">'pop'</span>] += int(data3)</span><br><span class="line"><span class="comment">#保存数据</span></span><br><span class="line">print(<span class="string">'正在保存文件。。'</span>)</span><br><span class="line"><span class="comment">## 将数据保存在一个py文件里</span></span><br><span class="line">resul = open(<span class="string">'cen2010.py'</span>,<span class="string">'w'</span>)</span><br><span class="line"><span class="comment">## 输出成字典</span></span><br><span class="line">resul.write(<span class="string">'allData = '</span>+pprint.pformat(InitData))</span><br></pre></td></tr></table></figure>
+
+<h3 id="保存新的文件"><a href="#保存新的文件" class="headerlink" title="保存新的文件"></a>保存新的文件</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#新建一个ex</span></span><br><span class="line">wb = openpyxl.Workbook()</span><br><span class="line"><span class="comment">#设置表单名和索引</span></span><br><span class="line">wb.create_sheet(index=<span class="number">0</span>,title=<span class="string">'first'</span>)</span><br><span class="line">wb.create_sheet(index=<span class="number">1</span>,title=<span class="string">'second'</span>)</span><br><span class="line"><span class="comment">#取第二个表单</span></span><br><span class="line">sheet = wb[<span class="string">'second'</span>]</span><br><span class="line"><span class="comment">#删除第二个表单</span></span><br><span class="line">wb.remove(sheet)</span><br><span class="line"><span class="comment">#保存为新的表单</span></span><br><span class="line">wb.save(<span class="string">'hhhh.xlsx'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">######################</span></span><br><span class="line"><span class="keyword">import</span> openpyxl</span><br><span class="line">wb = openpyxl.Workbook()</span><br><span class="line">ws1 = wb.create_sheet(index=<span class="number">0</span>,title=<span class="string">'test'</span>)</span><br><span class="line">list = [[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>],</span><br><span class="line">        [<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>],</span><br><span class="line">        [<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>]]</span><br><span class="line"><span class="comment">#可以将整个列表写入到表格</span></span><br><span class="line"><span class="keyword">for</span> l <span class="keyword">in</span> list:</span><br><span class="line">    <span class="comment">#append可以一次性将整个列表加入到表格的一行留</span></span><br><span class="line">    ws1.append(l)</span><br><span class="line"></span><br><span class="line">wb.save(<span class="string">'test.xlsx'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#######################</span></span><br><span class="line"><span class="comment">#对一定区间的每个单元格进行操作</span></span><br><span class="line"><span class="keyword">for</span> col <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">100</span>):</span><br><span class="line">    <span class="keyword">for</span> row <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">100</span>):</span><br><span class="line">        ws1.cell(column=col,row=row,value=col*row)</span><br></pre></td></tr></table></figure>
+
+<h3 id="一个小demo-统计计算全校各学院男女平均身高，并且生成图表"><a href="#一个小demo-统计计算全校各学院男女平均身高，并且生成图表" class="headerlink" title="一个小demo-统计计算全校各学院男女平均身高，并且生成图表"></a>一个小demo-统计计算全校各学院男女平均身高，并且生成图表</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> openpyxl</span><br><span class="line"><span class="keyword">from</span> openpyxl.chart <span class="keyword">import</span> BarChart,Reference,BarChart3D</span><br><span class="line"><span class="comment">#定义数据结构</span></span><br><span class="line"><span class="string">'''</span></span><br><span class="line"><span class="string">    data = &#123;</span></span><br><span class="line"><span class="string">            学院:&#123;</span></span><br><span class="line"><span class="string">                男：&#123;男生人数，身高&#125;，</span></span><br><span class="line"><span class="string">                女：&#123;女生人数，身高 &#125;</span></span><br><span class="line"><span class="string">            &#125;</span></span><br><span class="line"><span class="string">'''</span></span><br><span class="line"></span><br><span class="line">print(<span class="string">"正在打开文件"</span>)</span><br><span class="line">wb = openpyxl.load_workbook(<span class="string">'test.xlsx'</span>)</span><br><span class="line">sheet = wb.active</span><br><span class="line">data = &#123;&#125;</span><br><span class="line">print(<span class="string">"开始统计"</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">6</span>,sheet.max_row):</span><br><span class="line">    xueyuan = sheet[<span class="string">'E'</span>+str(i)].value</span><br><span class="line">    sex = sheet[<span class="string">'D'</span>+str(i)].value</span><br><span class="line">    hight = sheet[<span class="string">'F'</span>+str(i)].value</span><br><span class="line">    weight = sheet[<span class="string">'G'</span>+str(i)].value</span><br><span class="line">    data.setdefault(xueyuan,&#123;&#125;)</span><br><span class="line">    data[xueyuan].setdefault(sex,&#123;<span class="string">'num'</span>:<span class="number">0</span>,<span class="string">'ah'</span>:<span class="number">0</span>,<span class="string">'aw'</span>:<span class="number">0</span>&#125;)</span><br><span class="line">    data[xueyuan][sex][<span class="string">'num'</span>] += <span class="number">1</span></span><br><span class="line">    data[xueyuan][sex][<span class="string">'ah'</span>] +=float(hight)</span><br><span class="line">    data[xueyuan][sex][<span class="string">'aw'</span>] +=float(weight)</span><br><span class="line">print(<span class="string">"稍等一下，马上出数据"</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> data.keys():</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> data[i].keys():</span><br><span class="line">        data[i][j][<span class="string">'ah'</span>] = data[i][j][<span class="string">'ah'</span>] / data[i][j][<span class="string">'num'</span>]</span><br><span class="line">        data[i][j][<span class="string">'aw'</span>] = data[i][j][<span class="string">'aw'</span>] / data[i][j][<span class="string">'num'</span>]</span><br><span class="line">        <span class="comment"># print("&#123;&#125; &#123;&#125;生有 &#123;&#125; 人，平均身高 &#123;&#125; ，平均体重 &#123;&#125;".format(i,j,data[i][j]['num'],data[i][j]['ah'],data[i][j]['aw']))</span></span><br><span class="line">print(<span class="string">"即将将数据填入表格"</span>)</span><br><span class="line">lis_m = []</span><br><span class="line">lis_w = []</span><br><span class="line">list2 = []</span><br><span class="line">list2.append(<span class="string">'学院'</span>)</span><br><span class="line">list2.append(<span class="string">'人数'</span>)</span><br><span class="line">list2.append(<span class="string">'平均身高'</span>)</span><br><span class="line">list2.append(<span class="string">'平均体重'</span>)</span><br><span class="line">lis_m.append(list2)</span><br><span class="line">lis_w.append(list2)</span><br><span class="line"><span class="keyword">for</span> list1 <span class="keyword">in</span> data.keys():</span><br><span class="line">    list3 = list(data[list1][<span class="string">'男'</span>].values())</span><br><span class="line">    list3.insert(<span class="number">0</span>,list1)</span><br><span class="line">    lis_m.append(list3)</span><br><span class="line">    list4=list(data[list1][<span class="string">'女'</span>].values())</span><br><span class="line">    list4.insert(<span class="number">0</span>, list1)</span><br><span class="line">    lis_w.append(list4)</span><br><span class="line">print(<span class="string">"将数据填成表格中"</span>)</span><br><span class="line">wb = openpyxl.Workbook()</span><br><span class="line">sheet = wb.create_sheet(index=<span class="number">0</span>,title=<span class="string">'test'</span>)</span><br><span class="line">sheet.append([<span class="string">'男生'</span>])</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> lis_m:</span><br><span class="line">    sheet.append(i)</span><br><span class="line">sheet.append([<span class="string">'女生'</span>])</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> lis_w:</span><br><span class="line">    sheet.append(i)</span><br><span class="line">print(<span class="string">"表格生成完成，开始绘制图表。。。"</span>)</span><br><span class="line"></span><br><span class="line">chart1 = BarChart()</span><br><span class="line"></span><br><span class="line">chart1.type=<span class="string">'col'</span></span><br><span class="line">chart1.style = <span class="number">10</span></span><br><span class="line">chart1.title = <span class="string">'男生'</span></span><br><span class="line">chart1.y_axis.title=<span class="string">'身高体重'</span></span><br><span class="line">chart1.x_axis.title=<span class="string">'学院'</span></span><br><span class="line"></span><br><span class="line">cats = Reference(sheet,min_col=<span class="number">1</span>,min_row=<span class="number">2</span>,max_row=<span class="number">18</span>)</span><br><span class="line">data2 = Reference(sheet,min_col=<span class="number">3</span>,max_col=<span class="number">4</span>,min_row=<span class="number">3</span>,max_row=<span class="number">18</span>)</span><br><span class="line">chart1.add_data(data=data2,titles_from_data=<span class="literal">True</span>)</span><br><span class="line">chart1.set_categories(cats)</span><br><span class="line">sheet.add_chart(chart1,<span class="string">'G1'</span>)</span><br><span class="line">chart2 = BarChart()</span><br><span class="line">chart2.type=<span class="string">'col'</span></span><br><span class="line">chart2.style = <span class="number">10</span></span><br><span class="line">chart2.y_axis.title=<span class="string">'身高体重'</span></span><br><span class="line">chart2.x_axis.title=<span class="string">'学院'</span></span><br><span class="line">chart2.title = <span class="string">'女生'</span></span><br><span class="line">cats = Reference(sheet,min_col=<span class="number">1</span>,min_row=<span class="number">21</span>,max_row=<span class="number">36</span>)</span><br><span class="line">data3 = Reference(sheet,min_col=<span class="number">3</span>,max_col=<span class="number">4</span>,min_row=<span class="number">21</span>,max_row=<span class="number">36</span>)</span><br><span class="line">chart2.add_data(data=data3,titles_from_data=<span class="literal">True</span>)</span><br><span class="line">chart2.set_categories(cats)</span><br><span class="line">sheet.add_chart(chart2,<span class="string">'G20'</span>)</span><br><span class="line">print(<span class="string">"开始生成新文件。。。"</span>)</span><br><span class="line">wb.save(<span class="string">'new.xlsx'</span>)</span><br><span class="line">print(<span class="string">"完成！"</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用python发送QQ邮件（简单版）"><a href="#使用python发送QQ邮件（简单版）" class="headerlink" title="使用python发送QQ邮件（简单版）"></a>使用python发送QQ邮件（简单版）</h2><p>还不可以添加附件和图片等。。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">import smtplib</span><br><span class="line">from email.mime.text import MIMEText</span><br><span class="line">from email.header import Header</span><br><span class="line">&apos;&apos;&apos;</span><br><span class="line">发送qq邮件模块，</span><br><span class="line">from_addr 发送人邮箱</span><br><span class="line">from_pwd 授权码</span><br><span class="line">to_addr 收信人邮箱</span><br><span class="line">&apos;&apos;&apos;</span><br><span class="line">def send_Email(text,from_addr,from_pwd,to_addr,msg):</span><br><span class="line">    _from_email = from_addr</span><br><span class="line">    _from_pwd = from_pwd</span><br><span class="line">    _to_addr_ = to_addr</span><br><span class="line">    smtp_srv = &apos;smtp.qq.com&apos;</span><br><span class="line">    try:</span><br><span class="line">        #连接上邮箱服务器</span><br><span class="line">        srv = smtplib.SMTP_SSL(smtp_srv, 465)</span><br><span class="line">        srv.login(_from_email, _from_pwd)</span><br><span class="line">        srv.sendmail(_from_email, _to_addr_, msg.as_string())</span><br><span class="line">        srv.quit()</span><br><span class="line">    except Exception as e:</span><br><span class="line">        print(&apos;something error&apos;, e)</span><br><span class="line">##建立邮件格式</span><br><span class="line">def build_Text(text=&apos;&apos;,From=&apos;&apos;,title=&apos;&apos;,To=&apos;&apos;):</span><br><span class="line">    msg = MIMEText(text,&apos;plain&apos;,&apos;utf-8&apos;)</span><br><span class="line">    #发件人</span><br><span class="line">    msg[&apos;From&apos;]= Header(From)</span><br><span class="line">    #收件人</span><br><span class="line">    msg[&apos;To&apos;] = Header(To)</span><br><span class="line">    #标题</span><br><span class="line">    msg[&apos;Subject&apos;]=Header(title,&apos;utf-8&apos;)</span><br><span class="line">    return msg</span><br><span class="line">if __name__==&apos;__main__&apos;:</span><br><span class="line">    From = input(&apos;填写发件人名字：\t&apos;)</span><br><span class="line">    From_addr = input(&apos;填写发件人邮箱：\t&apos;)</span><br><span class="line">    To = input(&apos;填写收件人名字：\t&apos;)</span><br><span class="line">    To_addr = input(&apos;填写收件人邮箱：\t&apos;)</span><br><span class="line">    Title = input(&apos;填写邮件标题：\t&apos;)</span><br><span class="line">    Text = input(&apos;填写邮件正文:\n&apos;)</span><br><span class="line">    from_pwd=&apos;poxajievgyfmbaif&apos;</span><br><span class="line">    print(&apos;正在发送邮件。。。。&apos;)</span><br><span class="line">    try:</span><br><span class="line">        msg = build_Text(text=Text,From=From,title=Title,To=To)</span><br><span class="line">        send_Email(text=Text,from_addr=From_addr,from_pwd=from_pwd,to_addr=To_addr,msg=msg)</span><br><span class="line">        print(&quot;邮件发送成功！&quot;)</span><br><span class="line">    except Exception as e:</span><br><span class="line">        print(&quot;邮件发送失败：&quot;,e)</span><br></pre></td></tr></table></figure>
+
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2019/03/12/usepython/">http://yoursite.com/2019/03/12/usepython/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/python/"># python</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/03/12/docker/">Docker使用笔记（备忘录）</a>
+            
+            
+            <a class="next" rel="next" href="/2019/01/18/Tcp-ip/">图解TCP/IP学习笔记（一）</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

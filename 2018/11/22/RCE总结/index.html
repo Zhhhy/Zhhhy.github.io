@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>一些RCE总结的笔记 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#eval-执行代码"><span class="toc-text">eval()执行代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#定义和用法"><span class="toc-text">定义和用法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#assert-的代码执行"><span class="toc-text">assert()的代码执行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#preg-replace修正符的命令执行"><span class="toc-text">preg_replace修正符的命令执行</span></a></li></ol><li class="toc-item toc-level-1"><a class="toc-link" href="#preg-replace"><span class="toc-text">preg_replace</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#说明"><span class="toc-text">说明</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#create-function"><span class="toc-text">create_function()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#array-map"><span class="toc-text">array_map</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#定义和用法-1"><span class="toc-text">定义和用法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#语法"><span class="toc-text">语法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#call-user-func-call-user-func-array"><span class="toc-text">call_user_func()/call_user_func_array()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结一下"><span class="toc-text">总结一下</span></a></li>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">一些RCE总结的笔记</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">November 22, 2018&nbsp;&nbsp;11:25:36</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>总觉得作一些专题性的总结会比四处看题来的有效果吧？XD</p>
+<a id="more"></a>
+
+<h2 id="eval-执行代码"><a href="#eval-执行代码" class="headerlink" title="eval()执行代码"></a>eval()执行代码</h2><p>说起<code>RCE</code>，<strong>eval</strong>函数自然是应该排在首位，一句话木马就经常用它吧，<code>CMS</code>出现它，只要参数可控就很可能存在代码执行的可能性。<code>PHP</code>手册对该函数做出如下定义，其中关键点是<strong>该字符串必须是合法的 PHP 代码，且必须以分号结尾。</strong>这对构造<code>payload</code>是非常关键的一点。</p>
+<blockquote>
+<h2 id="定义和用法"><a href="#定义和用法" class="headerlink" title="定义和用法"></a>定义和用法</h2><p>eval() 函数把字符串按照 PHP 代码来计算。</p>
+<p>该字符串必须是合法的 PHP 代码，且必须以分号结尾。</p>
+<p>如果没有在代码字符串中调用 return 语句，则返回 NULL。如果代码中存在解析错误，则 eval() 函数返回 false</p>
+</blockquote>
+<p>下图可以看出，进过各种闭合后，得到了一个符合<code>PHP语法</code>的语句，于是<code>phpinfo</code>就被执行了。</p>
+<p><img src="RCE%E6%80%BB%E7%BB%93/1.png" alt></p>
+<h2 id="assert-的代码执行"><a href="#assert-的代码执行" class="headerlink" title="assert()的代码执行"></a>assert()的代码执行</h2><p>这个函数和<code>eval</code>有些不一样。<code>assert</code>把整个字符串参数当php代码执行，<code>eval</code>把合法的php代码执行</p>
+<p><img src="RCE%E6%80%BB%E7%BB%93/2.png" alt></p>
+<p>还是太菜了，试了半天没有试出这两个的函数的区别。通过构造闭合都成功了执行了<code>phpinfo()</code>还行吧。</p>
+<p><img src="RCE%E6%80%BB%E7%BB%93/3.png" alt></p>
+<p><code>php</code>还支持一种非常酷炫的函数调用方式</p>
+<p><img src="RCE%E6%80%BB%E7%BB%93/4.png" alt></p>
+<p>注意到这边是没用<code>;</code>，但是在<code>eval</code>中，如果没有封号语句是不执行，这也就是<code>assert</code>的语法规范并不明显。在平时写一句话木马中，常用的应该是<code>assert</code>，原因是多数系统会选择禁用掉<code>eval</code>函数。而<code>assert</code>常常用来作为判断一个表达式是否存在时有很大的便利。</p>
+<h2 id="preg-replace修正符的命令执行"><a href="#preg-replace修正符的命令执行" class="headerlink" title="preg_replace修正符的命令执行"></a>preg_replace修正符的命令执行</h2><p><code>preg_replace</code>函数主要用来执行正则表达式的搜索和替换，如<code>php手册</code>介绍如下。</p>
+<blockquote>
+<h1 id="preg-replace"><a href="#preg-replace" class="headerlink" title="preg_replace"></a>preg_replace</h1><p>(PHP 4, PHP 5, PHP 7)</p>
+<p>preg_replace — 执行一个正则表达式的搜索和替换</p>
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p><a href="http://php.net/manual/zh/language.pseudo-types.php#language.types.mixed" target="_blank" rel="noopener">mixed</a> preg_replace ( <a href="http://php.net/manual/zh/language.pseudo-types.php#language.types.mixed" target="_blank" rel="noopener">mixed</a> <code>$pattern</code> , <a href="http://php.net/manual/zh/language.pseudo-types.php#language.types.mixed" target="_blank" rel="noopener">mixed</a> <code>$replacement</code> , <a href="http://php.net/manual/zh/language.pseudo-types.php#language.types.mixed" target="_blank" rel="noopener">mixed</a> <code>$subject</code> [, int <code>$limit</code> = -1 [, int <code>&amp;$count</code> ]] )</p>
+<p>搜索<code>subject</code>中匹配<code>pattern</code>的部分， 以<code>replacement</code>进行替换。</p>
+</blockquote>
+<p>第一个参数<code>$pattern</code>：搜索的模式，可以是一个字符串或者字符串数组，可以加<code>\e</code>修正符。</p>
+<p>第二个参数<code>$replacement</code>：要替换的字符。</p>
+<p>第三个参数<code>$subject</code>：需要被处理的字符串。</p>
+<p>问题出在第一个参数的<code>\e</code>修正符上。当加上了<code>\e</code>修正符号时，<code>$replacement</code>会被当做php代码片段执行。这个环境需要在<code>php5.4</code>下。<code>php7.0</code>完全放弃了该函数，<code>php5.5的后续版本</code>会爆出提示，要求<code>preg_replace_callback()</code>来代替该函数。</p>
+<p><img src="RCE%E6%80%BB%E7%BB%93/5.png" alt></p>
+<h2 id="create-function"><a href="#create-function" class="headerlink" title="create_function()"></a>create_function()</h2><p>这个函数可以方便的创建一个简单的函数。但是再参数可控的情况下，可能出现执行任意代码的漏洞。之前博客也写过这个相关的了，贴上链接，这里就不赘述。</p>
+<p><a href="https://zhhhy.github.io/2018/10/14/RCE/" target="_blank" rel="noopener">https://zhhhy.github.io/2018/10/14/RCE/</a></p>
+<h2 id="array-map"><a href="#array-map" class="headerlink" title="array_map"></a>array_map</h2><p>先看看<code>php手册</code>上的定义和用法</p>
+<blockquote>
+<h2 id="定义和用法-1"><a href="#定义和用法-1" class="headerlink" title="定义和用法"></a>定义和用法</h2><p>array_map() 函数将用户自定义函数作用到数组中的每个值上，并返回用户自定义函数作用后的带有新值的数组。</p>
+<p>回调函数接受的参数数目应该和传递给 array_map() 函数的数组数目一致。</p>
+<h2 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; array_map(myfunction,array1,array2,array3...</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>很明显吧。可以很简单粗暴的理解成调用一个函数，函数的参数是数组里的值。并且，函数的参数个数要和数组中元素数量相等。</p>
+<p><img src="RCE%E6%80%BB%E7%BB%93/6.png" alt></p>
+<h2 id="call-user-func-call-user-func-array"><a href="#call-user-func-call-user-func-array" class="headerlink" title="call_user_func()/call_user_func_array()"></a>call_user_func()/call_user_func_array()</h2><p>这两个函数的基本原理和<code>array_map</code>基本一致，都是调用<code>assert</code>函数，再传参。导致的任意代码执行。例子就参考<code>array_map()</code>的吧。 </p>
+<h2 id="总结一下"><a href="#总结一下" class="headerlink" title="总结一下"></a>总结一下</h2><p>除去几个原本就能执行系统命令函数，剩下的其实就是通过各种方式去调用这些函数。在系统命令禁用了这些函数的时候，就需要想各种办法绕过了。绕过方式千奇百怪，真的是一个考验脑洞的事情。不过万变不离其宗，防御手段只要将本质问题给修补了，也就无法绕过了。</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/11/22/RCE总结/">http://yoursite.com/2018/11/22/RCE总结/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/代码审计、CTF/"># 代码审计、CTF</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/11/22/eval长度限制绕过/">eval长度限制绕过</a>
+            
+            
+            <a class="next" rel="next" href="/2018/11/20/变量覆盖/">简单总结变量覆盖</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

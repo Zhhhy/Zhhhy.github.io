@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>Serialize | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DAY11–Pumpkin-Pie-反序列化的利用"><span class="toc-text">DAY11–Pumpkin Pie 反序列化的利用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第二题-HITCON反序列化以及一些绕过方式"><span class="toc-text">第二题-HITCON反序列化以及一些绕过方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考博客"><span class="toc-text">参考博客</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Serialize</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">November 14, 2018&nbsp;&nbsp;19:06:23</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>之前总结过一次<a href="https://zhhhy.github.io/2018/09/05/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86" target="_blank" rel="noopener">反序列化问题</a>，不过时间久了，也有些忘了。再加上<code>红日安全day11</code>代码审计中的<code>CTF</code>觉得可以好好的学习一下序列化问题，就再一次重头开始，梳理一下相关的知识点，做个记录。</p>
+<a id="more"></a>
+
+<h2 id="DAY11–Pumpkin-Pie-反序列化的利用"><a href="#DAY11–Pumpkin-Pie-反序列化的利用" class="headerlink" title="DAY11–Pumpkin Pie 反序列化的利用"></a>DAY11–Pumpkin Pie 反序列化的利用</h2><p><img src="Serialize/1.png" alt></p>
+<blockquote>
+<p>由于没有给可复制的源码。。手打的怕有误，就贴上这个图。漏洞解析： (上图代码第11行正则表达式应改为：’/O:\d:/‘)</p>
+</blockquote>
+<p><strong>第12行发现反序列化</strong>，而<code>data</code>参数是通过<code>构造函数</code>传入的，所以<code>data</code>参数可控。<code>__desturct()</code>函数在对象销毁时被调用，所以对象销毁的时候调用了<code>createrCache()</code>函数，而<code>createrCache函数</code>的功能是生成一个文件，并且用<code>file_put_contents</code>写入内容。</p>
+<p>再看看，反序列化前的<code>限制</code>，前两位不能是<code>O:</code>说明不能将一个对象进行序列化，并且输入的不能是<code>O:十进制数字：</code>这样的形式。</p>
+<p>直接看看<code>payload</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a:<span class="number">1</span>:&#123;i:<span class="number">0</span>;O:+<span class="number">8</span>:<span class="string">"Template"</span>:<span class="number">2</span>:&#123;s:<span class="number">9</span>:<span class="string">"cacheFile"</span>;s:<span class="number">10</span>:<span class="string">"./test.php"</span>;s:<span class="number">8</span>:<span class="string">"template"</span>;s:<span class="number">25</span>:<span class="string">"&lt;?php eval($_POST[xx]);?&gt;"</span>;&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>a:</code>是数组，所以绕过了<code>if</code>的第一个条件。这里在<code>8</code>的前面加了一个<code>+</code>，为了是绕过<code>if</code>的第二个条件。不得不服大佬通过看<code>php</code>的内核源码来发现出添加一个<code>+</code>不会影响反序列化的流程，从而绕过了<code>waf</code>。</p>
+<p>所以思路还是很清晰的，利用生成对象的时候，和销毁对象自动调用的一系列方法，从而写入任意文件。</p>
+<p>为了方便复现，我将接受参数的方法换成了<code>GET</code>，结果被自己无比愚蠢的坑了一晚上。先是将函数名打错，后来又忘了将<code>+</code>进行<code>URL</code>编码，导致一直复现不成功。</p>
+<h2 id="第二题-HITCON反序列化以及一些绕过方式"><a href="#第二题-HITCON反序列化以及一些绕过方式" class="headerlink" title="第二题-HITCON反序列化以及一些绕过方式"></a>第二题-HITCON反序列化以及一些绕过方式</h2><p>这题代码量有点大，得慢慢分析</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">"config.php"</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HITCON</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $method;</span><br><span class="line">    <span class="keyword">public</span> $args;</span><br><span class="line">    <span class="keyword">public</span> $conn;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($method, $args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;method = $method;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;args = $args;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;__conn();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__conn</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">global</span> $db_host, $db_name, $db_user, $db_pass, $DEBUG;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">$this</span>-&gt;conn)</span><br><span class="line">            <span class="keyword">$this</span>-&gt;conn = mysql_connect($db_host, $db_user, $db_pass);</span><br><span class="line">        mysql_select_db($db_name, <span class="keyword">$this</span>-&gt;conn);</span><br><span class="line">        <span class="keyword">if</span> ($DEBUG) &#123;</span><br><span class="line">            $sql = <span class="string">"DROP TABLE IF  EXISTS  users"</span>;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;__query($sql, $back=<span class="keyword">false</span>);</span><br><span class="line">            $sql = <span class="string">"CREATE TABLE IF NOT EXISTS users (username VARCHAR(64),</span></span><br><span class="line"><span class="string">            password VARCHAR(64),role VARCHAR(256)) CHARACTER SET utf8"</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">$this</span>-&gt;__query($sql, $back=<span class="keyword">false</span>);</span><br><span class="line">            $sql = <span class="string">"INSERT INTO users VALUES ('orange', '$db_pass', 'admin'), ('phddaa', 'ddaa', 'user')"</span>;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;__query($sql, $back=<span class="keyword">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        mysql_query(<span class="string">"SET names utf8"</span>);</span><br><span class="line">        mysql_query(<span class="string">"SET sql_mode = 'strict_all_tables'"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__query</span><span class="params">($sql, $back=true)</span> </span>&#123;</span><br><span class="line">        $result = @mysql_query($sql);</span><br><span class="line">        <span class="keyword">if</span> ($back) &#123;</span><br><span class="line">            <span class="keyword">return</span> @mysql_fetch_object($result);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">login</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">list</span>($username, $password) = func_get_args();</span><br><span class="line">        $sql = sprintf(<span class="string">"SELECT * FROM users WHERE username='%s' AND password='%s'"</span>, $username, md5($password));</span><br><span class="line">        $obj = <span class="keyword">$this</span>-&gt;__query($sql);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> ( $obj != <span class="keyword">false</span> ) &#123;</span><br><span class="line">            define(<span class="string">'IN_FLAG'</span>, <span class="keyword">TRUE</span>);</span><br><span class="line">            <span class="keyword">$this</span>-&gt;loadData($obj-&gt;role);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">$this</span>-&gt;__die(<span class="string">"sorry!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">loadData</span><span class="params">($data)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (substr($data, <span class="number">0</span>, <span class="number">2</span>) !== <span class="string">'O:'</span> &amp;&amp; !preg_match(<span class="string">'/O:\d:/'</span>, $data)) &#123;</span><br><span class="line">            <span class="keyword">return</span> unserialize($data);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> [];</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__die</span><span class="params">($msg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;__close();</span><br><span class="line">        header(<span class="string">"Content-Type: application/json"</span>);</span><br><span class="line">        <span class="keyword">die</span>( json_encode( <span class="keyword">array</span>(<span class="string">"msg"</span>=&gt; $msg) ) );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__close</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        mysql_close(<span class="keyword">$this</span>-&gt;conn);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">source</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;__conn();</span><br><span class="line">        <span class="keyword">if</span> (in_array(<span class="keyword">$this</span>-&gt;method, <span class="keyword">array</span>(<span class="string">"login"</span>, <span class="string">"source"</span>))) &#123;</span><br><span class="line">            @call_user_func_array(<span class="keyword">array</span>(<span class="keyword">$this</span>, <span class="keyword">$this</span>-&gt;method), <span class="keyword">$this</span>-&gt;args);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;__die(<span class="string">"What do you do?"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;__close();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">foreach</span>(<span class="keyword">$this</span>-&gt;args <span class="keyword">as</span> $k =&gt; $v) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;args[$k] = strtolower(trim(mysql_escape_string($v)));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SoFun</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $file=<span class="string">'index.php'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(!<span class="keyword">empty</span>(<span class="keyword">$this</span>-&gt;file)) &#123;</span><br><span class="line">            <span class="keyword">include</span> <span class="keyword">$this</span>-&gt;file;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span><span class="params">()</span></span>&#123;</span><br><span class="line">    	<span class="keyword">$this</span>-&gt; file=<span class="string">'index.php'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">"data"</span>])) &#123;</span><br><span class="line">    @unserialize($_GET[<span class="string">"data"</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">new</span> HITCON(<span class="string">"source"</span>, <span class="keyword">array</span>());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">    </span><br><span class="line"> <span class="comment">// flag.php</span></span><br><span class="line">    !defined(<span class="string">'IN_FLAG'</span>) &amp;&amp; <span class="keyword">exit</span>(<span class="string">'Access Denied'</span>);</span><br></pre></td></tr></table></figure>
+
+<p>首先，先找到了调用反序列化函数的地方<code>loadData</code>,这边<code>waf</code>绕过方法和上文相同，就不赘述了。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">loadData</span><span class="params">($data)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (substr($data, <span class="number">0</span>, <span class="number">2</span>) !== <span class="string">'O:'</span> &amp;&amp; !preg_match(<span class="string">'/O:\d:/'</span>, $data)) &#123;</span><br><span class="line">        <span class="keyword">return</span> unserialize($data);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> [];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后，跟一下<code>loadData</code>在哪被调用，</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span> </span>&#123;</span><br><span class="line">       <span class="keyword">$this</span>-&gt;__conn();</span><br><span class="line">       <span class="keyword">if</span> (in_array(<span class="keyword">$this</span>-&gt;method, <span class="keyword">array</span>(<span class="string">"login"</span>, <span class="string">"source"</span>))) &#123;</span><br><span class="line">           @call_user_func_array(<span class="keyword">array</span>(<span class="keyword">$this</span>, <span class="keyword">$this</span>-&gt;method), <span class="keyword">$this</span>-&gt;args);</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里发现<code>login</code>函数被调用，分析到这里，由于对<code>PHP</code>不熟悉的弊端又显现了。。有点寸步难行。。贴上<code>红日安全</code>的分析。</p>
+<blockquote>
+<p>在<strong>HINCON</strong>类<strong>__destruct</strong>方法中，通过<strong>call_user_func_array()</strong>函数调用login或source方法，如果<strong>$this-&gt;method=’login’</strong>则可以调用<strong>login()</strong>函数，<strong>$this-&gt;method</strong>为类变量，反序列化可控。<strong>$this-&gt;args</strong>为调用函数传入参数，意味着login函数中$username变量可控，此时可通过SQL注入，构造查询数据。</p>
+</blockquote>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">login</span><span class="params">()</span> </span>&#123;</span><br><span class="line">       <span class="keyword">list</span>($username, $password) = func_get_args();</span><br><span class="line">       $sql = sprintf(<span class="string">"SELECT * FROM users WHERE username='%s' AND password='%s'"</span>, $username, md5($password));</span><br><span class="line">       $obj = <span class="keyword">$this</span>-&gt;__query($sql);</span><br><span class="line"></span><br><span class="line">       <span class="keyword">if</span> ( $obj != <span class="keyword">false</span> ) &#123;</span><br><span class="line">           define(<span class="string">'IN_FLAG'</span>, <span class="keyword">TRUE</span>);</span><br><span class="line">           <span class="keyword">$this</span>-&gt;loadData($obj-&gt;role);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">else</span> &#123;</span><br><span class="line">         <span class="keyword">$this</span>-&gt;__die(<span class="string">"sorry!"</span>);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以发现当数据库查询的结果不为空的时候才可以调用<code>loadData</code>，并且将常量定义成<code>TRUE</code>。这里可以通过<code>sql</code>注入，使用<code>union</code>联合查询使得查询结果不为空。以上都是在<code>HINCON类</code>里，所以要构造一个<code>序列化字符串</code>进行<code>sql</code>注入。不过这边先要看看<code>username</code>和<code>password</code>参数是否可控。</p>
+<p>接下来在看看<code>SoFun类</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!<span class="keyword">empty</span>(<span class="keyword">$this</span>-&gt;file)) &#123;</span><br><span class="line">        <span class="keyword">include</span> <span class="keyword">$this</span>-&gt;file;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在销毁对象的时候包含了一个文件，而这个文件名被<code>__wakeup</code>初始化了。需要绕过去，这个简单，只要改一下对象属性个数的值大于真实值。</p>
+<p>那么其实思路就是，想办法构造一个利用序列化生成一个对象，在销毁对象的时候，调用<code>login</code>造成<code>sql注入</code>用<code>union</code>联合查询的特性，使得返回值不为空，从而进入下一步反序列化的。下一步序列化，是为了使得<code>文件包含flag.php</code>,由于在第一步序列化之后，<code>flag.php</code>的常量就被定成<code>TRUE</code>所以可以被文件包含读取到。</p>
+<h2 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h2><p>分析到这，大概懂得反序列化漏洞的成因和基础利用，还有一般的绕过方式。但是像上面这样复杂点的，要自己构造生成序列化字符串的，还是难以解决。</p>
+<p><a href="http://www.cnblogs.com/nienie/p/9789017.html" target="_blank" rel="noopener">http://www.cnblogs.com/nienie/p/9789017.html</a></p>
+<p><a href="https://www.freebuf.com/vuls/80293.html" target="_blank" rel="noopener">https://www.freebuf.com/vuls/80293.html</a></p>
+<p><a href="https://blog.csdn.net/qq_42196196/article/details/81217375" target="_blank" rel="noopener">https://blog.csdn.net/qq_42196196/article/details/81217375</a></p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/11/14/Serialize/">http://yoursite.com/2018/11/14/Serialize/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/代码审计/"># 代码审计</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/11/15/hpp-1/">浅析HTTP参数污染（HPP）以及REQUEST引发的安全问题</a>
+            
+            
+            <a class="next" rel="next" href="/2018/11/09/php-study-1/">代码审计慢慢学-01</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

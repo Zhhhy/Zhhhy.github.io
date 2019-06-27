@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>爬虫学习之urllib、requests、BeautifulSoup | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#urllib库"><span class="toc-text">urllib库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#request模块"><span class="toc-text">request模块</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#get请求"><span class="toc-text">get请求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#post请求"><span class="toc-text">post请求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#urlopen返回一些信息"><span class="toc-text">urlopen返回一些信息</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#parse模块"><span class="toc-text">parse模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#error模块"><span class="toc-text">error模块</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#requests库"><span class="toc-text">requests库</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#get请求-1"><span class="toc-text">get请求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#post请求-1"><span class="toc-text">post请求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#同样的可以查看一些返回值，例如cookie，状态码，响应头等"><span class="toc-text">同样的可以查看一些返回值，例如cookie，状态码，响应头等</span></a></li></ol></li></ol><li class="toc-item toc-level-2"><a class="toc-link" href="#BeautifulSoup库"><span class="toc-text">BeautifulSoup库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#对象种类"><span class="toc-text">对象种类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#tag-就是一个html的一个标签"><span class="toc-text">tag 就是一个html的一个标签</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#NavigableString"><span class="toc-text">NavigableString</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#搜索文档树"><span class="toc-text">搜索文档树</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一个demo：-获取天气预报网上的信息"><span class="toc-text">一个demo： 获取天气预报网上的信息</span></a></li>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">爬虫学习之urllib、requests、BeautifulSoup</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 2, 2019&nbsp;&nbsp;19:04:59</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <h2 id="urllib库"><a href="#urllib库" class="headerlink" title="urllib库"></a>urllib库</h2><h3 id="request模块"><a href="#request模块" class="headerlink" title="request模块"></a>request模块</h3><h4 id="get请求"><a href="#get请求" class="headerlink" title="get请求"></a>get请求</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> urllib <span class="keyword">import</span> request,error,parse</span><br><span class="line">url =<span class="string">'http://www.pm25x.com/city/beijing.htm'</span></span><br><span class="line"><span class="comment">#request中的urlopen方法主要用来打开一个链接</span></span><br><span class="line">html = request.urlopen(url)</span><br><span class="line"><span class="comment">#返回一个对象</span></span><br><span class="line"><span class="comment"># rs = html.read()</span></span><br><span class="line"><span class="comment">#可以直接用read方法读取对象内容</span></span><br><span class="line"><span class="comment">#也可以使用decode方法进行解码</span></span><br><span class="line">rs2 = html.read().decode(<span class="string">'utf-8'</span>)</span><br><span class="line"><span class="comment"># print(rs)</span></span><br><span class="line">print(rs2)</span><br><span class="line"><span class="comment">### urlopen( url，data，proxies ) ：用于打开 url</span></span><br><span class="line"><span class="comment">#proxies参数为设置ip代理</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="post请求"><a href="#post请求" class="headerlink" title="post请求"></a>post请求</h4><p>打开url的操作是一次get的访问。那么如果要传post数据如何做到？</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">url = <span class="string">"http://www.baidu.com"</span></span><br><span class="line"><span class="comment">#设置数据参数</span></span><br><span class="line">data = &#123;</span><br><span class="line">    <span class="string">'a'</span>:<span class="string">'a'</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">#将数据进行编码 a=a</span></span><br><span class="line">data = parse.urlencode(data).encode(<span class="string">"utf-8"</span>)</span><br><span class="line"><span class="comment">#设置请求头信息</span></span><br><span class="line">headers = &#123;</span><br><span class="line">    <span class="string">"a"</span>:<span class="string">"a"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment"># 封装成req对象</span></span><br><span class="line">req = request.Request(url=url,data=data,headers=headers)</span><br><span class="line"><span class="comment">#访问目标网站</span></span><br><span class="line">rs = request.urlopen(req)</span><br><span class="line"><span class="comment">#对返回对象进行解码</span></span><br><span class="line">html = rs.read().decode(<span class="string">'utf-8'</span>)</span><br><span class="line">print(html)</span><br></pre></td></tr></table></figure>
+
+<h4 id="urlopen返回一些信息"><a href="#urlopen返回一些信息" class="headerlink" title="urlopen返回一些信息"></a>urlopen返回一些信息</h4><ul>
+<li>getcode()  返回http状态码</li>
+<li>info()返回头部信息</li>
+<li>geturl() 返回当前url</li>
+<li>read() 返回对象内容</li>
+</ul>
+<h3 id="parse模块"><a href="#parse模块" class="headerlink" title="parse模块"></a>parse模块</h3><p>可以使用parse对url进行解析</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> urllib <span class="keyword">import</span> request,error,parse</span><br><span class="line"><span class="comment">#可以解析网址</span></span><br><span class="line">url =<span class="string">'http://www.pm25x.com/city/beijing.htm'</span></span><br><span class="line">o = parse.urlparse(url)</span><br><span class="line"><span class="comment">#得到解析结果以后</span></span><br><span class="line">print(o)</span><br><span class="line">print(<span class="string">"scheme=&#123;&#125;"</span>.format(o.scheme)) <span class="comment">#协议</span></span><br><span class="line">print(<span class="string">"netloc=&#123;&#125;"</span>.format(o.netloc)) <span class="comment">#域名</span></span><br><span class="line">print(<span class="string">"path=&#123;&#125;"</span>.format(o.path))<span class="comment">#文件路径</span></span><br><span class="line">print(<span class="string">"params=&#123;&#125;"</span>.format(o.params))<span class="comment">#参数</span></span><br><span class="line">print(<span class="string">"query=&#123;&#125;"</span>.format(o.query))</span><br><span class="line">print(<span class="string">"fragment=&#123;&#125;"</span>.format(o.fragment))</span><br><span class="line"><span class="comment">###########################输出如下</span></span><br><span class="line">ParseResult(scheme=<span class="string">'http'</span>, netloc=<span class="string">'www.pm25x.com'</span>, path=<span class="string">'/city/beijing.htm'</span>, params=<span class="string">''</span>, query=<span class="string">''</span>, fragment=<span class="string">''</span>)</span><br><span class="line">scheme=http</span><br><span class="line">netloc=www.pm25x.com</span><br><span class="line">path=/city/beijing.htm</span><br><span class="line">params=</span><br><span class="line">query=</span><br><span class="line">fragment=</span><br></pre></td></tr></table></figure>
+
+<h3 id="error模块"><a href="#error模块" class="headerlink" title="error模块"></a>error模块</h3><p>error模块其实就使用一个异常处理类</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> urllib <span class="keyword">import</span> request,error,parse</span><br><span class="line">url = <span class="string">"http://www.efgiegfik.com/"</span></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    rs = request.urlopen(url)</span><br><span class="line"><span class="keyword">except</span> error.HTTPError <span class="keyword">as</span> e:</span><br><span class="line">    print(<span class="string">"Http error : &#123;&#125;"</span>.format(e.reason))</span><br><span class="line"><span class="comment">#由于url不存在于是执行urlerror</span></span><br><span class="line"><span class="keyword">except</span> error.URLError <span class="keyword">as</span> e:</span><br><span class="line">    print(<span class="string">"URL error : &#123;&#125;"</span>.format(e.reason))</span><br><span class="line"><span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">    print(<span class="string">"Something wrong: &#123;&#125;"</span>.format(e))</span><br></pre></td></tr></table></figure>
+
+<h2 id="requests库"><a href="#requests库" class="headerlink" title="requests库"></a>requests库</h2><p>request库比较强大，底层使用urllib3实现。</p>
+<h4 id="get请求-1"><a href="#get请求-1" class="headerlink" title="get请求"></a>get请求</h4><p>使用 request.get()</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span>  requests</span><br><span class="line">url = <span class="string">'http://www.baidu.com'</span></span><br><span class="line">data = &#123;<span class="string">'a'</span>:<span class="string">'a'</span>&#125;</span><br><span class="line">rs = requests.get(url=url,params=data)</span><br><span class="line"><span class="comment">#比urllib的urlioen方便多了</span></span><br><span class="line"><span class="comment">#查看源码可以发现最终调用的是</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">request</span><span class="params">(self, method, url,</span></span></span><br><span class="line"><span class="function"><span class="params">            params=None, data=None, headers=None, cookies=None, files=None,</span></span></span><br><span class="line"><span class="function"><span class="params">            auth=None, timeout=None, allow_redirects=True, proxies=None,</span></span></span><br><span class="line"><span class="function"><span class="params">            hooks=None, stream=None, verify=None, cert=None, json=None)</span>:</span></span><br><span class="line"><span class="comment"># 那么post和get的发包方式差别就不大了。</span></span><br><span class="line"><span class="comment"># 调用 rs.url可以查看url。</span></span><br><span class="line">print(rs.url)</span><br><span class="line"><span class="comment">#http://www.baidu.com/?a=a</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="post请求-1"><a href="#post请求-1" class="headerlink" title="post请求"></a>post请求</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span>  requests</span><br><span class="line"></span><br><span class="line">url = <span class="string">'http://www.baidu.com'</span></span><br><span class="line">data = &#123;<span class="string">'a'</span>:<span class="string">'a'</span>&#125;</span><br><span class="line"><span class="comment">#这里是data</span></span><br><span class="line"><span class="comment">#get的是params</span></span><br><span class="line">rs = requests.post(url=url,data=data)</span><br><span class="line">rs.encoding=<span class="string">'utf-8'</span></span><br><span class="line">print(rs.text)</span><br><span class="line"><span class="comment">#同样的可以设置headers cookie等</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="同样的可以查看一些返回值，例如cookie，状态码，响应头等"><a href="#同样的可以查看一些返回值，例如cookie，状态码，响应头等" class="headerlink" title="同样的可以查看一些返回值，例如cookie，状态码，响应头等"></a>同样的可以查看一些返回值，例如cookie，状态码，响应头等</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">rs = requests.get(url=url)</span><br><span class="line"><span class="comment"># 查看cookie  cookie返回时一个对象</span></span><br><span class="line">print(rs.cookies[<span class="string">'BDORZ'</span>])</span><br><span class="line"><span class="comment"># 查看返回头</span></span><br><span class="line">print(rs.headers)</span><br><span class="line"><span class="comment"># 查看状态码</span></span><br><span class="line">print(rs.status_code)</span><br><span class="line"><span class="comment"># 查看编码</span></span><br><span class="line">print(rs.encoding)</span><br><span class="line"><span class="comment">#查看url</span></span><br><span class="line">print(rs.url)</span><br><span class="line"><span class="comment"># 查看重定向</span></span><br><span class="line">print(rs.history)</span><br></pre></td></tr></table></figure>
+
+<p>还有一个session机制</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> request</span><br><span class="line">session = requests.session()</span><br><span class="line"><span class="comment">#用来保证接下里的程序使用同一个会话</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="BeautifulSoup库"><a href="#BeautifulSoup库" class="headerlink" title="BeautifulSoup库"></a>BeautifulSoup库</h2><p><a href="https://blog.csdn.net/kikaylee/article/details/56841789" target="_blank" rel="noopener">参考资料</a></p>
+<p>不管是urllib还是request的提供了方便的访问网页的机制，但是对数据提取来说BeautifulSoup是很强大的</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line">url =<span class="string">'http://www.baidu.com'</span></span><br><span class="line"><span class="comment">#创建一个返回实例</span></span><br><span class="line">rs = requests.get(url)</span><br><span class="line"><span class="comment">#解析为lxml</span></span><br><span class="line">soup = BeautifulSoup(rs.text,<span class="string">'lxml'</span>)</span><br><span class="line">print(soup.prettify())</span><br><span class="line"><span class="comment">#格式化输出</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="对象种类"><a href="#对象种类" class="headerlink" title="对象种类"></a>对象种类</h3><h4 id="tag-就是一个html的一个标签"><a href="#tag-就是一个html的一个标签" class="headerlink" title="tag 就是一个html的一个标签"></a>tag 就是一个html的一个标签</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#输出input标签</span></span><br><span class="line">print(soup.input) </span><br><span class="line"><span class="comment">#&lt;input name="bdorz_come" type="hidden" value="1"/&gt;</span></span><br><span class="line"><span class="comment">#输出title标签</span></span><br><span class="line"><span class="keyword">print</span>（soup.title）</span><br><span class="line"><span class="comment">#&lt;title&gt;百度一下，你就知道&lt;/title&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>tag标签的属性：</p>
+<p>attrs  是一个字典，表示标签里的属性</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">print(soup.meta.attrs)</span><br><span class="line"><span class="comment">#&#123;'http-equiv': 'content-type', 'content': 'text/html;charset=utf-8'&#125;</span></span><br><span class="line"><span class="comment">#既然是字段就可以使用字典的方式访问值</span></span><br><span class="line">print(soup.meta.attrs[<span class="string">'http-equiv'</span>])</span><br><span class="line"><span class="comment">#content-type</span></span><br></pre></td></tr></table></figure>
+
+<p>name 返回的是标签本身的名字</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">print(soup.link.name)</span><br><span class="line"><span class="comment">#link</span></span><br></pre></td></tr></table></figure>
+
+<p>值得注意到是<code>soup</code>对象的name是document的</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">print(soup.name)</span><br><span class="line"><span class="comment">#[document]</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="NavigableString"><a href="#NavigableString" class="headerlink" title="NavigableString"></a>NavigableString</h4><p>string可以返回标签的内容</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">print(soup.a.string)</span><br><span class="line">print(type(soup.a.string))</span><br><span class="line"><span class="comment">#&lt;class 'bs4.element.NavigableString'&gt;</span></span><br><span class="line"><span class="comment">#可以看出string是NavigableString的属性</span></span><br><span class="line"><span class="comment">#而text是标签的属性</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="搜索文档树"><a href="#搜索文档树" class="headerlink" title="搜索文档树"></a>搜索文档树</h3><p>可以使用findall或者find。区别在于findall返回该所以标签的一个列表。而find是一条记录</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">url =<span class="string">'http://www.baidu.com'</span></span><br><span class="line">rs = requests.get(url)</span><br><span class="line">rs.encoding=<span class="string">'utf-8'</span></span><br><span class="line">soup = BeautifulSoup(rs.text,<span class="string">'html.parser'</span>)</span><br><span class="line">a = soup.find_all(<span class="string">'a'</span>) <span class="comment">#那么久可以访问</span></span><br><span class="line"><span class="comment"># print(a)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> a:</span><br><span class="line">    <span class="comment"># print(type(i)) 可以看出它是个tag对象</span></span><br><span class="line">    print(i.attrs[<span class="string">'href'</span>]) <span class="comment">#那么就可以用attrs去访问元素</span></span><br></pre></td></tr></table></figure>
+
+<p>还可以使用CSS选择器的方式搜索文档</p>
+<p>使用CSS选择比用tag标签的方式方便非常多。通常一类数据用一类的CSS选择器修饰。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#标签选择器</span></span><br><span class="line"><span class="keyword">print</span> bs.select(<span class="string">'a'</span>)</span><br><span class="line"><span class="comment">#类名选择器</span></span><br><span class="line"><span class="keyword">print</span> bs.select(<span class="string">'.css'</span>)</span><br><span class="line"><span class="comment">#id选择器</span></span><br><span class="line"><span class="keyword">print</span> bs.select(<span class="string">'#css'</span>)</span><br><span class="line"><span class="comment">#属性选择器</span></span><br><span class="line"><span class="keyword">print</span> bs.select(<span class="string">'a[class="css"]'</span>)</span><br><span class="line"><span class="comment">#遍历</span></span><br><span class="line"><span class="keyword">for</span> tag <span class="keyword">in</span> bs.select(<span class="string">'a'</span>):</span><br><span class="line">    <span class="keyword">print</span> tag.get_text()</span><br></pre></td></tr></table></figure>
+
+<h2 id="一个demo：-获取天气预报网上的信息"><a href="#一个demo：-获取天气预报网上的信息" class="headerlink" title="一个demo： 获取天气预报网上的信息"></a>一个demo： 获取天气预报网上的信息</h2><p>写了一小段获取天气信息并发送邮箱的小demo</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">from bs4 import BeautifulSoup</span><br><span class="line">import requests</span><br><span class="line">import Email #Email是自己写的邮件发送功能</span><br><span class="line">#目标网址</span><br><span class="line">url = &apos;http://www.weather.com.cn/weather/101230601.shtml&apos;</span><br><span class="line">rs = requests.get(url)</span><br><span class="line">rs.encoding=&apos;utf-8&apos;</span><br><span class="line"># print(rs.text)</span><br><span class="line">soup = BeautifulSoup(rs.text,&apos;html.parser&apos;)</span><br><span class="line"></span><br><span class="line">#分析网页会发现日期是h1标签之中</span><br><span class="line">h1 = soup.find_all(&apos;h1&apos;)</span><br><span class="line"># 用css选择器来获取天气状况，由于用标签比css选择器复杂的多所以不选用</span><br><span class="line">where = soup.select(&apos;p[class=&quot;wea&quot;]&apos;)</span><br><span class="line">#选取温度</span><br><span class="line">temp = soup.select(&apos;p[class =&quot;tem&quot;]&apos;)</span><br><span class="line">T = []</span><br><span class="line">#对取到的温度进行处理</span><br><span class="line">for t in temp:</span><br><span class="line">   # print(t.text.replace(&apos;\n&apos;,&apos;&apos;))</span><br><span class="line">   T.append(t.text.replace(&apos;\n&apos;,&apos;&apos;))</span><br><span class="line"># 一下是邮件内容的构建并且发送</span><br><span class="line">Text = &quot;&#123;&#125;这时候的温度是&#123;&#125;，天气状况是：&#123;&#125;；\n&quot;.format(h1[0].text,T[0] ,where[0].text)</span><br><span class="line">Text+=&quot;&#123;&#125;的时候，天气状况是&#123;&#125;，气温是&#123;&#125;；\n&quot;.format(h1[1].text,where[1].text,T[1])</span><br><span class="line">Text+=&quot;&#123;&#125;的时候，天气状况是&#123;&#125;，气温是&#123;&#125;；\n&quot;.format(h1[2].text,where[2].text,T[2])</span><br><span class="line">Text+=&quot;&#123;&#125;的时候，天气状况是&#123;&#125;，气温是&#123;&#125;；\n&quot;.format(h1[3].text,where[3].text,T[3])</span><br><span class="line">Text+=&quot;&#123;&#125;的时候，天气状况是&#123;&#125;，气温是&#123;&#125;；\n&quot;.format(h1[4].text,where[4].text,T[4])</span><br><span class="line">Text+=&quot;&#123;&#125;的时候，天气状况是&#123;&#125;，气温是&#123;&#125;；\n&quot;.format(h1[5].text,where[5].text,T[5])</span><br><span class="line">Text+=&quot;&#123;&#125;的时候，天气状况是&#123;&#125;，气温是&#123;&#125;；\n&quot;.format(h1[6].text,where[6].text,T[6])</span><br><span class="line"># print(Text)</span><br><span class="line">From = &apos;sd@qq.com&apos;</span><br><span class="line">Title = &apos;天气预报&apos;</span><br><span class="line">To = &apos;zhhhy&apos;</span><br><span class="line">From_addr = &apos;sd@qq.com&apos;</span><br><span class="line">from_pwd = &apos;ssdasd&apos;</span><br><span class="line">To_addr = &apos;ds@qq.com&apos;</span><br><span class="line"></span><br><span class="line">try:</span><br><span class="line">    msg = Email.build_Text(text=Text, From=From, title=Title, To=To)</span><br><span class="line">    Email.send_Email(text=Text, from_addr=From_addr, from_pwd=from_pwd, to_addr=To_addr, msg=msg)</span><br><span class="line">    print(&quot;邮件发送成功！&quot;)</span><br><span class="line">except Exception as e:</span><br><span class="line">    print(&quot;邮件发送失败：&quot;, e)</span><br></pre></td></tr></table></figure>
+
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2019/04/02/spider/">http://yoursite.com/2019/04/02/spider/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/python/"># python</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/04/05/scrapy/">python scrapy框最最最基基础知识</a>
+            
+            
+            <a class="next" rel="next" href="/2019/04/02/learn-xss1/">XSS分析学习总结</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

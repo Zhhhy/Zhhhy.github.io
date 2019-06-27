@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>DVWA-SQL | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#level-low"><span class="toc-text">level-low</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Medium"><span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#High"><span class="toc-text">High</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">DVWA-SQL</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">August 20, 2018&nbsp;&nbsp;19:55:55</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>DVWA代码审计 在不熟悉php代码的前提下,认识漏洞成因,php的具体知识以后再补</p>
+<a id="more"></a>
+
+<h2 id="level-low"><a href="#level-low" class="headerlink" title="level-low"></a>level-low</h2><pre><code>&lt;?php
+if( isset( $_REQUEST[ &apos;Submit&apos; ] ) ) {
+    // Get input
+    $id = $_REQUEST[ &apos;id&apos; ];
+    // Check database
+    $query  = &quot;SELECT first_name, last_name FROM users WHERE user_id = &apos;$id&apos;;&quot;;
+    $result = mysqli_query($GLOBALS[&quot;___mysqli_ston&quot;],  $query ) or die( &apos;&lt;pre&gt;&apos; . ((is_object($GLOBALS[&quot;___mysqli_ston&quot;])) ? mysqli_error($GLOBALS[&quot;___mysqli_ston&quot;]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . &apos;&lt;/pre&gt;&apos; );
+
+    // Get results
+    while( $row = mysqli_fetch_assoc( $result ) ) {
+        // Get values
+        $first = $row[&quot;first_name&quot;];
+        $last  = $row[&quot;last_name&quot;];
+        // Feedback for end user
+        $html .= &quot;&lt;pre&gt;ID: {$id}&lt;br /&gt;First name: {$first}&lt;br /&gt;Surname: {$last}&lt;/pre&gt;&quot;;
+    }
+    mysqli_close($GLOBALS[&quot;___mysqli_ston&quot;]);
+}
+
+?&gt;</code></pre><p>查看源码,利用GET 方法传递参数id.并未对id进行过滤,导致可以输入非法字符,从而构造<br>select first_name,last_name from users where user_id =’ ‘ or ‘1’=’1’;<br>由于 or ‘1’=’1’ 为真,前面即使为假也能使得查询语句成立.<br>利用 order by 来查询有几列: ‘ order by #    &lt;order by 3 报错 order by 2 不报错说明 2列<br>联合查询 union select database(),user()<br>由于没有过滤,只要构造合适的语句都可以查询数据库,从而泄露出数据.</p>
+<h2 id="Medium"><a href="#Medium" class="headerlink" title="Medium"></a>Medium</h2><pre><code>&lt;?php
+if( isset( $_POST[ &apos;Submit&apos; ] ) ) {
+    // Get input
+    $id = $_POST[ &apos;id&apos; ];
+    $id = mysqli_real_escape_string($GLOBALS[&quot;___mysqli_ston&quot;], $id);
+    $query  = &quot;SELECT first_name, last_name FROM users WHERE user_id = $id;&quot;;
+    $result = mysqli_query($GLOBALS[&quot;___mysqli_ston&quot;], $query) or die( &apos;&lt;pre&gt;&apos; . mysqli_error($GLOBALS[&quot;___mysqli_ston&quot;]) . &apos;&lt;/pre&gt;&apos; );
+
+    // Get results
+    while( $row = mysqli_fetch_assoc( $result ) ) {
+        // Display values
+        $first = $row[&quot;first_name&quot;];
+        $last  = $row[&quot;last_name&quot;];
+
+        // Feedback for end user
+        $html .= &quot;&lt;pre&gt;ID: {$id}&lt;br /&gt;First name: {$first}&lt;br /&gt;Surname: {$last}&lt;/pre&gt;&quot;;
+    }
+
+}
+
+// This is used later on in the index.php page
+// Setting it here so we can close the database connection in here like in the rest of the source scripts    
+$query  = &quot;SELECT COUNT(*) FROM users;&quot;;
+$result = mysqli_query($GLOBALS[&quot;___mysqli_ston&quot;],  $query ) or die( &apos;&lt;pre&gt;&apos; . ((is_object($GLOBALS[&quot;___mysqli_ston&quot;])) ? mysqli_error($GLOBALS[&quot;___mysqli_ston&quot;]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . &apos;&lt;/pre&gt;&apos; );
+$number_of_rows = mysqli_fetch_row( $result )[0];
+
+mysqli_close($GLOBALS[&quot;___mysqli_ston&quot;]);
+?&gt;</code></pre><p>其中传入的参数利用mysqli_real_escape_string函数进行过滤</p>
+<p>mysql_real_escape_string() 函数转义 SQL 语句中使用的字符串中的特殊字符。<br>下列字符受影响：<br>    \x00<br>    \n<br>    \r<br>    \ 
+    ‘<br>    “<br>    \x1a<br>如果成功，则该函数返回被转义的字符串。如果失败，则返回 false。<br>也就是说单引号和双引号都无法使用.</p>
+<p>可是对比medium和low的源码 发现这并不是一个字符型的注入点,即并不需要单引号来闭合前面都引号,因此payload不需要出现单引号,因此这个函数过滤形同虚设.</p>
+<h2 id="High"><a href="#High" class="headerlink" title="High"></a>High</h2><p>虽然添加了LIMIT 1，但是我们可以通过#将其注释掉。由于手工注入的过程与Low级别基本一样，直接最后一步演示下载数据。<br>输入1 or 1=1 union select group_concat(user_id,first_name,last_name),group_concat(password) from users #，查询成功<br>需要特别提到的是，High级别的查询提交页面与查询结果显示页面不是同一个，也没有执行302跳转，这样做的目的是为了防止一般的sqlmap注入，因为sqlmap在注入过程中，无法在查询提交页面上获取查询的结果，没有了反馈，也就没办法进一步注入</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/08/20/p/">http://yoursite.com/2018/08/20/p/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/08/21/XXE/">XXE漏洞基本原理利用与防御</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

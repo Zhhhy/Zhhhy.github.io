@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>upload_labs九到十六总结 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#pass-09"><span class="toc-text">pass-09 </span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pass-10"><span class="toc-text">pass-10</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pass-11"><span class="toc-text">pass-11</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pass-12"><span class="toc-text">pass-12</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pass-13"><span class="toc-text">pass-13</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pass-16"><span class="toc-text">pass-16</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">upload_labs九到十六总结</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">August 27, 2018&nbsp;&nbsp;18:22:42</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>继续学习文件上传骚操作 skr<del>skr</del></p>
+<a id="more"></a>
+<h2 id="pass-09"><a href="#pass-09" class="headerlink" title="pass-09 "></a>pass-09 </h2><pre><code>$is_upload = false;
+$msg = null;
+if (isset($_POST[&apos;submit&apos;])) {
+    if (file_exists(UPLOAD_PATH)) {
+        $deny_ext = array        (&quot;.php&quot;,&quot;.php5&quot;,&quot;.php4&quot;,&quot;.php3&quot;,&quot;.php2&quot;,&quot;.html&quot;,&quot;.htm&quot;,&quot;.phtml&quot;,&quot;.pHp&quot;,&quot;.pHp5&quot;,&quot;.pHp4&quot;,&quot;.pHp3&quot;,&quot;.pHp2&quot;,&quot;.Html&quot;,&quot;.Htm&quot;,&quot;.pHtml&quot;,&quot;.jsp&quot;,&quot;.jspa&quot;,&quot;.jspx&quot;,&quot;.jsw&quot;,&quot;.jsv&quot;,&quot;.jspf&quot;,&quot;.jtml&quot;,&quot;.jSp&quot;,&quot;.jSpx&quot;,&quot;.jSpa&quot;,&quot;.jSw&quot;,&quot;.jSv&quot;,&quot;.jSpf&quot;,&quot;.jHtml&quot;,&quot;.asp&quot;,&quot;.aspx&quot;,&quot;.asa&quot;,&quot;.asax&quot;,&quot;.ascx&quot;,&quot;.ashx&quot;,&quot;.asmx&quot;,&quot;.cer&quot;,&quot;.aSp&quot;,&quot;.aSpx&quot;,&quot;.aSa&quot;,&quot;.aSax&quot;,&quot;.aScx&quot;,&quot;.aShx&quot;,&quot;.aSmx&quot;,&quot;.cEr&quot;,&quot;.sWf&quot;,&quot;.swf&quot;,&quot;.htaccess&quot;);
+        $file_name = trim($_FILES[&apos;upload_file&apos;][&apos;name&apos;]);
+        $file_name = deldot($file_name);//删除文件名末尾的点
+        $file_ext = strrchr($file_name, &apos;.&apos;);
+        $file_ext = strtolower($file_ext); //转换为小写
+        $file_ext = str_ireplace(&apos;::$DATA&apos;, &apos;&apos;, $file_ext);//去除字符串::$DATA
+        $file_ext = trim($file_ext); //首尾去空
+
+        if (!in_array($file_ext, $deny_ext)) {
+            if (move_uploaded_file($_FILES[&apos;upload_file&apos;][&apos;tmp_name&apos;], UPLOAD_PATH . &apos;/&apos; . $_FILES[&apos;upload_file&apos;][&apos;name&apos;])) {    
+                $img_path = UPLOAD_PATH . &apos;/&apos; . $file_name;
+                $is_upload = true;
+            }
+        } else {
+            $msg = &apos;此文件不允许上传&apos;;
+        }
+    } else {
+        $msg = UPLOAD_PATH . &apos;文件夹不存在,请手工创建！&apos;;
+    }
+}</code></pre><p>源码发现黑名单机制将该过滤的都过滤了.可是过滤仅过滤了一次.<br>假如构造         test.php. .  //点+空格+点<br>首先第一步删掉了文件末尾的点 test.php.    //点+空格<br>然后第二步删掉了末尾的空格    test.php.     //点<br>从而绕过了对文件名的处理.<br>前由此前八关也可以利用这种方式绕过构造.可这种利用方式如果没有拿到源码的情况下,构造这样的payload我想还是不太容易的,所以对这样的文件名处理还是有一定的防御能力</p>
+<h2 id="pass-10"><a href="#pass-10" class="headerlink" title="pass-10"></a>pass-10</h2><pre><code>$is_upload = false;
+$msg = null;
+if (isset($_POST[&apos;submit&apos;])) {
+    if (file_exists(UPLOAD_PATH)) {
+        $deny_ext = array(&quot;php&quot;,&quot;php5&quot;,&quot;php4&quot;,&quot;php3&quot;,&quot;php2&quot;,&quot;html&quot;,&quot;htm&quot;,&quot;phtml&quot;,&quot;jsp&quot;,&quot;jspa&quot;,&quot;jspx&quot;,&quot;jsw&quot;,&quot;jsv&quot;,&quot;jspf&quot;,&quot;jtml&quot;,&quot;asp&quot;,&quot;aspx&quot;,&quot;asa&quot;,&quot;asax&quot;,&quot;ascx&quot;,&quot;ashx&quot;,&quot;asmx&quot;,&quot;cer&quot;,&quot;swf&quot;,&quot;htaccess&quot;);
+
+        $file_name = trim($_FILES[&apos;upload_file&apos;][&apos;name&apos;]);
+        $file_name = str_ireplace($deny_ext,&quot;&quot;, $file_name);
+        if (move_uploaded_file($_FILES[&apos;upload_file&apos;][&apos;tmp_name&apos;], UPLOAD_PATH . &apos;/&apos; . $file_name)) {
+            $img_path = UPLOAD_PATH . &apos;/&apos; .$file_name;
+            $is_upload = true;
+        }
+    } else {
+        $msg = UPLOAD_PATH . &apos;文件夹不存在,请手工创建！&apos;;
+    }
+}</code></pre><p>同样是黑名单机制但是,这次不同的是当发现黑名单里的字符串时,它采取的是替换为空<br>构造test.pphphp<br>str_ireplace(find,replace,string,count)该函数对大小写不敏感。</p>
+<p>同时对大小写敏感的是str_replace(find,replace,string,count)</p>
+<p>作用是将string中的find替换成relpace，count计数替换了几次。</p>
+<p>如果find和replace都是数组的话，replace若多于find，则多余部分无视，若少，则空串替换。</p>
+<h2 id="pass-11"><a href="#pass-11" class="headerlink" title="pass-11"></a>pass-11</h2><pre><code>$is_upload = false;
+$msg = null;
+if(isset($_POST[&apos;submit&apos;])){
+    $ext_arr = array(&apos;jpg&apos;,&apos;png&apos;,&apos;gif&apos;);
+    $file_ext = substr($_FILES[&apos;upload_file&apos;][&apos;name&apos;],strrpos($_FILES[&apos;upload_file&apos;][&apos;name&apos;],&quot;.&quot;)+1);
+    if(in_array($file_ext,$ext_arr)){
+        $temp_file = $_FILES[&apos;upload_file&apos;][&apos;tmp_name&apos;];
+        $img_path = $_GET[&apos;save_path&apos;].&quot;/&quot;.rand(10, 99).date(&quot;YmdHis&quot;).&quot;.&quot;.$file_ext;
+
+        if(move_uploaded_file($temp_file,$img_path)){
+            $is_upload = true;
+        }
+        else{
+            $msg = &apos;上传失败！&apos;;
+        }
+    }
+    else{
+        $msg = &quot;只允许上传.jpg|.png|.gif类型文件！&quot;;
+    }
+}</code></pre><p>不知道什么原因上传失败,查了别人的payload也还是失败.先留着</p>
+<h2 id="pass-12"><a href="#pass-12" class="headerlink" title="pass-12"></a>pass-12</h2><pre><code>$is_upload = false;
+$msg = null;
+if(isset($_POST[&apos;submit&apos;])){
+    $ext_arr = array(&apos;jpg&apos;,&apos;png&apos;,&apos;gif&apos;);
+    $file_ext = substr($_FILES[&apos;upload_file&apos;][&apos;name&apos;],strrpos($_FILES[&apos;upload_file&apos;][&apos;name&apos;],&quot;.&quot;)+1);
+    if(in_array($file_ext,$ext_arr)){
+        $temp_file = $_FILES[&apos;upload_file&apos;][&apos;tmp_name&apos;];
+        $img_path = $_POST[&apos;save_path&apos;].&quot;/&quot;.rand(10, 99).date(&quot;YmdHis&quot;).&quot;.&quot;.$file_ext;
+
+        if(move_uploaded_file($temp_file,$img_path)){
+            $is_upload = true;
+        }
+        else{
+            $msg = &quot;上传失败&quot;;
+        }
+    }
+    else{
+        $msg = &quot;只允许上传.jpg|.png|.gif类型文件！&quot;;
+    }
+}</code></pre><p>12和11其实是同类型 都是由于上传路径可控可以利用%00截断构造php结尾的文件.<br>11题是get型直接在url后面添加%00就可以达到效果,<br>12题是post型需要利用burp在发包的时候以16进制的方式修改<br>例如 test.php .jpg //中间有个空格<br>​     空格对应的16进制是20利用burp修改成00便可以达到目的</p>
+<p>   %00截断有这么2种利用状况<br>   在url中加入%00，如<a href="http://xxxx/filename.php%00.jpg" target="_blank" rel="noopener">http://xxxx/filename.php%00.jpg</a><br>   在burpsuite的16进制编辑工具将”filename.php .jpg”[带空格的]中间的空格由20改成00</p>
+<p>url中的%00[只要是这种%xx]的形式，Webserver会把它当作十六进制处理，然后把16进制的hex自动翻译成ascii码值“NULL”,实现了截断Burpsuite中16进制编辑器将空格20改成了00，跟上面一样的变成Asccii的null。</p>
+<h2 id="pass-13"><a href="#pass-13" class="headerlink" title="pass-13"></a>pass-13</h2><p>从此关开始php文件不能直接执行,需要配合其他漏洞才能利用.在源码上的表现,就是文件后缀被写死,一定是gif,jpg,png<br>​    
+    function getReailFileType($filename){<br>        $file = fopen($filename, “rb”);<br>        $bin = fread($file, 2); //只读2字节<br>        fclose($file);<br>        $strInfo = @unpack(“C2chars”, $bin);<br>        $typeCode = intval($strInfo[‘chars1’].$strInfo[‘chars2’]);<br>        $fileType = ‘’;<br>        switch($typeCode){<br>            case 255216:<br>                $fileType = ‘jpg’;<br>                break;<br>            case 13780:<br>                $fileType = ‘png’;<br>                break;<br>            case 7173:<br>                $fileType = ‘gif’;<br>                break;<br>            default:<br>                $fileType = ‘unknown’;<br>            }<br>            return $fileType;<br>    }</p>
+<pre><code>$is_upload = false;
+$msg = null;
+if(isset($_POST[&apos;submit&apos;])){
+    $temp_file = $_FILES[&apos;upload_file&apos;][&apos;tmp_name&apos;];
+    $file_type = getReailFileType($temp_file);
+
+    if($file_type == &apos;unknown&apos;){
+        $msg = &quot;文件未知，上传失败！&quot;;
+    }else{
+        $img_path = UPLOAD_PATH.&quot;/&quot;.rand(10, 99).date(&quot;YmdHis&quot;).&quot;.&quot;.$file_type;
+        if(move_uploaded_file($temp_file,$img_path)){
+            $is_upload = true;
+        }
+        else{
+            $msg = &quot;上传失败&quot;;
+        }
+    }
+}</code></pre><p>pass-13只是读取文件头两个字节, 也就是文件头了, 于是可以用 copy 命令去生成一个图片马<br>​    
+    copy test.jpg /b + test.php /a shell.jpg</p>
+<p>pass-14<br>​    
+    $image_type = exif_imagetype($filename);</p>
+<p>pass-15<br>​    
+    $info = getimagesize($filename);<br>    $ext = image_type_to_extension($info[2]);</p>
+<h2 id="pass-16"><a href="#pass-16" class="headerlink" title="pass-16"></a>pass-16</h2><p>16题进行层层检查,毫无可能上传一个php文件.即使是插入了php代码的图片马也会被二次渲染一定几率破坏掉.虽然有机会绕过,但是在没有类似文件包含这样的漏洞执行php代码,这个漏洞并不能被利用.<br>要实现上传正常的图片与二次渲染的图片进行对比,在相同数据部分插入php代码     //这种骚操作暂时还不会</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>  1.对文件名的处理是必要且有效的,进过滤一次特殊字符可能达不到预期的防御效果<br>         2.上传路径和文件名可控会存在一定问题<br>         3.写死文件后缀可以防止恶意文件的getshell.像菜刀链接的文件就得是php,asp这些动态文件<br>         4.当文件名被写死时,需要寻找例如文件包含漏洞来触发图片马内的php代码达到getshell</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/08/27/upload-libs/">http://yoursite.com/2018/08/27/upload-libs/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/08/31/race-condtion/">Race-condition</a>
+            
+            
+            <a class="next" rel="next" href="/2018/08/25/upload-labs/">upload-labs前八关总结</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

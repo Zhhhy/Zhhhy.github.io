@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>ThinkPHP3.2学习 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#目录结构发生了改变"><span class="toc-text">目录结构发生了改变</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2版本采用命名空间"><span class="toc-text">3.2版本采用命名空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2版本无需配置分组，直接使用独立分组"><span class="toc-text">3.2版本无需配置分组，直接使用独立分组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#差别"><span class="toc-text">差别</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">ThinkPHP3.2学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">March 12, 2019&nbsp;&nbsp;20:03:37</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>3.2版本并非3.1的一个小升级，而是一个大版本的更新。与3.1进行对比学习更容易掌握吧。</p>
+<h2 id="目录结构发生了改变"><a href="#目录结构发生了改变" class="headerlink" title="目录结构发生了改变"></a>目录结构发生了改变</h2><p>初始的目录结构</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">www  WEB部署目录（或者子目录）</span><br><span class="line">├─index.php       入口文件</span><br><span class="line">├─README.<span class="built_in">md</span>       README文件</span><br><span class="line">├─Application     应用目录</span><br><span class="line">├─Public          资源文件目录</span><br><span class="line">└─ThinkPHP        框架目录</span><br></pre></td></tr></table></figure>
+
+<p>Thinkphp中的目录结构</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">├─ThinkPHP 框架系统目录（可以部署在非web目录下面）</span><br><span class="line">│  ├─Common       核心公共函数目录</span><br><span class="line">│  ├─Conf         核心配置目录 </span><br><span class="line">│  ├─Lang         核心语言包目录</span><br><span class="line">│  ├─Library      框架类库目录</span><br><span class="line">│  │  ├─Think     核心Think类库包目录</span><br><span class="line">│  │  ├─Behavior  行为类库目录</span><br><span class="line">│  │  ├─Org       Org类库包目录</span><br><span class="line">│  │  ├─Vendor    第三方类库目录</span><br><span class="line">│  │  ├─ ...      更多类库目录</span><br><span class="line">│  ├─<span class="built_in">Mode</span>         框架应用模式目录</span><br><span class="line">│  ├─Tpl          系统模板目录</span><br><span class="line">│  ├─LICENSE.txt  框架授权协议文件</span><br><span class="line">│  ├─logo.png     框架LOGO文件</span><br><span class="line">│  ├─README.txt   框架README文件</span><br><span class="line">│  └─ThinkPHP.php    框架入口文件</span><br></pre></td></tr></table></figure>
+
+<p>对比一下3.1版本的目录结构</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">├─ThinkPHP.php     框架入口文件</span><br><span class="line">├─Common 框架公共文件</span><br><span class="line">├─Conf 框架配置文件</span><br><span class="line">├─Extend 框架扩展目录</span><br><span class="line">├─Lang 核心语言包目录</span><br><span class="line">├─Lib 核心类库目录</span><br><span class="line">│  ├─Behavior 核心行为类库</span><br><span class="line">│  ├─Core 核心基类库</span><br><span class="line">│  ├─Driver 内置驱动</span><br><span class="line">│  │  ├─Cache 内置缓存驱动</span><br><span class="line">│  │  ├─Db 内置数据库驱动</span><br><span class="line">│  │  ├─TagLib 内置标签驱动</span><br><span class="line">│  │  └─Template 内置模板引擎驱动</span><br><span class="line">│  └─Template 内置模板引擎</span><br><span class="line">└─Tpl 系统模板目录</span><br></pre></td></tr></table></figure>
+
+<p><strong>3.1版本</strong>的前端模板文件是放在TPL目录里的，而<strong>3.2</strong>则放在<strong>View文件</strong>。</p>
+<h2 id="3-2版本采用命名空间"><a href="#3-2版本采用命名空间" class="headerlink" title="3.2版本采用命名空间"></a>3.2版本采用命名空间</h2><p>3.2版本全面采用命名空间方式定义和加载类库文件，有效的解决多个模块之间的冲突问题，并且实现了更加高效的类库自动加载机制。</p>
+<p>由于新版完全采用了命名空间的特性，因此只需要给类库正确定义所在的命名空间，而命名空间的路径与类库文件的目录一致，那么就可以实现类的自动加载。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Org</span>\<span class="title">Util</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">File</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>系统会自动加载 <code>ThinkPHP/Library/Org/Util/File.class.php</code> 文件。</p>
+<p>由于采用了命名空间的方式，原本需要手动导入类库文件的操作，现在已经不需要了。可以自动完成加载，已验证码为例</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//3.1版本</span></span><br><span class="line">import(<span class="string">'ORG.Util.Image'</span>);</span><br><span class="line">Image::buildImageVerify(<span class="number">4</span>,<span class="number">1</span>,<span class="string">'png'</span>,<span class="number">30</span>,<span class="number">30</span>,<span class="string">'code'</span>);</span><br><span class="line"><span class="comment">//3.2版本</span></span><br><span class="line">		$config = <span class="keyword">array</span>(</span><br><span class="line">			<span class="string">'fontSize'</span> =&gt; <span class="number">20</span>,</span><br><span class="line">			<span class="string">'length'</span> =&gt; <span class="number">2</span>,</span><br><span class="line">			<span class="string">'expire'</span> =&gt; <span class="number">60</span>,</span><br><span class="line">			<span class="string">'imageW'</span> =&gt; <span class="number">70</span>,</span><br><span class="line">			<span class="string">'imageH'</span> =&gt; <span class="number">35</span>,</span><br><span class="line">			<span class="string">'reset'</span> =&gt; <span class="keyword">false</span>,</span><br><span class="line">			</span><br><span class="line">		);</span><br><span class="line">		<span class="comment">//$config作为配置验证码规格大小样式。</span></span><br><span class="line">		$Verify = <span class="keyword">new</span> \Think\Verify($config);</span><br><span class="line">		<span class="comment">//自动加载类库</span></span><br><span class="line">		$Verify-&gt;entry();</span><br><span class="line">		<span class="comment">//Verify类已经封装好了验证码的检验函数，check();</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2版本无需配置分组，直接使用独立分组"><a href="#3-2版本无需配置分组，直接使用独立分组" class="headerlink" title="3.2版本无需配置分组，直接使用独立分组"></a>3.2版本无需配置分组，直接使用独立分组</h2><p>在3.2中，例如建立了一个Home分组和Admin分组用来对应前端和后台。他们彼此之间不能相互访问，否则会报错。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//入口文件 index.php</span></span><br><span class="line">define(<span class="string">'BIND_MODULE'</span>,<span class="string">'Home'</span>);</span><br><span class="line"><span class="comment">//当开启绑定模块选项以后，就无法访问其他分组了，Localhost/blog/index.php/Admin  报错</span></span><br><span class="line"><span class="comment">//未开启则可以访问</span></span><br><span class="line"><span class="comment">//相应的后台入口文件 admin.php</span></span><br><span class="line">define(<span class="string">'BIND_MODULE'</span>,<span class="string">'Home'</span>);</span><br><span class="line"><span class="comment">//如此两个分组相互独立，拥有各自的配置文件。</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="差别"><a href="#差别" class="headerlink" title="差别"></a>差别</h2><p>大部分使用方法和3.1版本差别不大，加入了不少新的特性。例如可以切换数据库，连贯操作似乎变得更多了。并且高版本的php语法知识也在这个版本之中体现出来了。一方面再深入一下php原生语法的知识，另一方面再对命名空间的知识得补补。毕竟之后tp5还得用。。</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2019/03/12/thinkphp32/">http://yoursite.com/2019/03/12/thinkphp32/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/thinkphp/"># thinkphp</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/03/12/lamp/">搭建LAMP环境（php5.6）</a>
+            
+            
+            <a class="next" rel="next" href="/2019/03/12/thinkphp31/">愉快的学习ThinkPHP3（3.1.2版本）之核心部分</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

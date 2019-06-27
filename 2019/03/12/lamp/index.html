@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>搭建LAMP环境（php5.6） | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#安装apache"><span class="toc-text">安装apache</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装php5-6（7-2）"><span class="toc-text">安装php5.6（7.2）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装mysql"><span class="toc-text">安装mysql</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#遇到的问题"><span class="toc-text">遇到的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#在apache运行的时候遇到了"><span class="toc-text">在apache运行的时候遇到了</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mysql启动报错【No-directory-logging-in-with-HOME-】"><span class="toc-text">mysql启动报错【No directory, logging in with HOME=/】</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#无法找到add-apt-repository问题的解决方法"><span class="toc-text">无法找到add-apt-repository问题的解决方法</span></a></li></ol></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">搭建LAMP环境（php5.6）</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">March 12, 2019&nbsp;&nbsp;20:05:26</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>部署在docker环境，为了给学弟们搭建两个靶场折腾了一整天。。闹心。</p>
+<p>因为是docker， 拉取了一个最新版本的ubuntu。（用centos出现一些问题，所以投入了ubuntu的怀抱）</p>
+<a id="more"></a>
+
+<h2 id="安装apache"><a href="#安装apache" class="headerlink" title="安装apache"></a>安装apache</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apt-get install apache2</span><br><span class="line">service apache2 start</span><br><span class="line">service apache2 status</span><br></pre></td></tr></table></figure>
+
+<p>浏览器访问localhost能出现apache的欢迎界面就是安装成功了</p>
+<h2 id="安装php5-6（7-2）"><a href="#安装php5-6（7-2）" class="headerlink" title="安装php5.6（7.2）"></a>安装php5.6（7.2）</h2><p>安装7.x的只要一句话,但是7.0的版本兼容性不是特别好，有时需要换5的版本。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apt-get install php7.2</span><br><span class="line">apt-get install libapache2-mod-php7.2</span><br><span class="line">apt-get install php7.2-mysql</span><br></pre></td></tr></table></figure>
+
+<p>安装5.6</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">apt-get install -y language-pack-en-base</span><br><span class="line">LC_ALL=en_US.UTF-8 add-apt-repository ppa:ondrej/php</span><br><span class="line">add-apt-repository ppa:ondrej/php</span><br><span class="line">apt-get update</span><br><span class="line">apt-get install php5.6-common</span><br><span class="line">apt-get install libapache2-mod-php5.6</span><br><span class="line">apt-get install php5.6-mysql</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装mysql"><a href="#安装mysql" class="headerlink" title="安装mysql"></a>安装mysql</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install mysql-server</span><br></pre></td></tr></table></figure>
+
+<p>安装的时候没有设置密码，导致无法登陆mysql<br>解决方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/mysql stop 先停止mysql服务</span><br><span class="line">/usr/bin/mysqld_safe --skip-grant-tables --skip-networking </span><br><span class="line">安全模式运行</span><br><span class="line">如果这里报错</span><br><span class="line">执行以下代码</span><br><span class="line">mkdir -p /var/run/mysqld</span><br><span class="line">chown mysql:mysql /var/run/mysqld</span><br><span class="line">然后在输入</span><br><span class="line">/usr/bin/mysqld_safe --skip-grant-tables --skip-networking</span><br><span class="line">mysql -u root 成功执行</span><br><span class="line"></span><br><span class="line">进入mysql以后修改root密码</span><br><span class="line">use mysql;</span><br><span class="line">update user set authentication_string=PASSWORD(&quot;这里输入你要改的密码&quot;) where User=&apos;root&apos;; #更改密码</span><br><span class="line">update user set plugin=&quot;mysql_native_password&quot;; #如果没这一行可能也会报一个错误，因此需要运行这一行</span><br><span class="line"> </span><br><span class="line">flush privileges; #更新所有操作权限</span><br><span class="line">quit;</span><br><span class="line">最后重启mysql服务就好了</span><br><span class="line">service mysql restart</span><br></pre></td></tr></table></figure>
+
+<h2 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h2><h3 id="在apache运行的时候遇到了"><a href="#在apache运行的时候遇到了" class="headerlink" title="在apache运行的时候遇到了"></a>在apache运行的时候遇到了</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName</span><br></pre></td></tr></table></figure>
+
+<p>解决：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/apache2/httpd.conf</span><br><span class="line">ServerName localhost</span><br></pre></td></tr></table></figure>
+
+<h3 id="mysql启动报错【No-directory-logging-in-with-HOME-】"><a href="#mysql启动报错【No-directory-logging-in-with-HOME-】" class="headerlink" title="mysql启动报错【No directory, logging in with HOME=/】"></a>mysql启动报错【No directory, logging in with HOME=/】</h3><p>解决：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> usermod -d /var/lib/mysql/ mysql#第一步</span><br><span class="line">ln -s /var/lib/mysql/mysql.sock /tmp/mysql.sock#第二步</span><br><span class="line">chown -R mysql:mysql /var/lib/mysql#第三步</span><br><span class="line"><span class="meta">#</span>之后重启mysql即可</span><br></pre></td></tr></table></figure>
+
+<h3 id="无法找到add-apt-repository问题的解决方法"><a href="#无法找到add-apt-repository问题的解决方法" class="headerlink" title="无法找到add-apt-repository问题的解决方法"></a>无法找到add-apt-repository问题的解决方法</h3><p>解决：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install software-properties-common</span><br></pre></td></tr></table></figure>
+
+<p>然后就能用add-apt-repository了</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2019/03/12/lamp/">http://yoursite.com/2019/03/12/lamp/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/docker/"># docker</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/03/12/pjfortp31/">基于ThinkPHP3.1.2的留言板（超简单版本）</a>
+            
+            
+            <a class="next" rel="next" href="/2019/03/12/thinkphp32/">ThinkPHP3.2学习</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>

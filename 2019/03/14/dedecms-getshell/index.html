@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>DedeCMS v5.7 sp2 后台getshell | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bentham&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bentham&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#效果如下"><span class="toc-text">效果如下</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞分析"><span class="toc-text">漏洞分析</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">DedeCMS v5.7 sp2 后台getshell</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">March 14, 2019&nbsp;&nbsp;14:03:27</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <h2 id="效果如下"><a href="#效果如下" class="headerlink" title="效果如下"></a>效果如下</h2><p><img src="dedecms-getshell%5C1.png" alt></p>
+<h2 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h2><p>问题文件在\uploads\dede\makehtml_homepage.php中第44行开始</p>
+<p><img src="D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C2.png" alt></p>
+<p>此处将一个静态文件模板进行更新，并且可控的写入了index.php之中。下好断点开始跟踪。</p>
+<p>登陆后台在模板管理处，生成新的模板文件，并且写入一句话木马。这里的后缀名一定要htm。</p>
+<p><img src="D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C3.png" alt></p>
+<p>保存以后，在生成功能=》更新主页HTML出进行模板替换。</p>
+<p><img src="D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C4.png" alt></p>
+<p>点击更新主页。</p>
+<p>PHPSTORM已经运行到断点代码了，开始跟踪代码流程</p>
+<p>首先进入arc.partview.class.php文件中实例化了PartView对象。我们需要关注一下shell2.htm内容是否被改变以及是否写入了index.php之中。</p>
+<p>这个对象对模板文件进行一些初始化的工作，例如读取路径之类的操作。</p>
+<p><img src="D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C5.png" alt></p>
+<p>接着进入到SetTemplet函数。发现我们的shell2.htm被调用了</p>
+<p><img src="D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C6.png" alt></p>
+<p>继续往下跟，找到读取文件内容的地方 LoadTemplate函数</p>
+<p><img src="D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C7.png" alt></p>
+<p>在这里，我们的shell2.htm被打开，并且一次读取1024的长度。将读取到的字符串保存在SourceString之中。接下来的目标是看看这个变量是否被处理了。一步步跟代码会发现，SourceString参数并没有被处理。现在要达成getshell，只要保证最后生成的文件是php文件而且SourceString参数被写入。看最后保存文件的部分</p>
+<p><img src="D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C8.png" alt></p>
+<p>目标文件index.php被引入了。往下执行，在SaveTo函数中，利用fwrite函数将$this-&gt;GetResult()的值写入，</p>
+<p><img src="D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C9.png" alt></p>
+<p>我们看看GetResult的返回值。</p>
+<p><img src="D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C10.png" alt></p>
+<p>很明显，在此处就将一句话木马写入了index.php之中，并且对后缀名并没有修改。</p>
+<p>到此，漏洞复现成功。</p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2019/03/14/dedecms-getshell/">http://yoursite.com/2019/03/14/dedecms-getshell/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/代码审计/"># 代码审计</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/04/02/linux-user/">Linux 用户和用户管理知识</a>
+            
+            
+            <a class="next" rel="next" href="/2019/03/12/pjfortp31/">基于ThinkPHP3.1.2的留言板（超简单版本）</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>
