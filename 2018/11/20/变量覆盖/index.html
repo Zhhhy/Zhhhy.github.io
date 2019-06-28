@@ -126,16 +126,16 @@
 <a id="more"></a>
 
 <h2 id="导致的变量覆盖问题"><a href="#导致的变量覆盖问题" class="headerlink" title="$导致的变量覆盖问题"></a><strong>$导致的变量覆盖问题</strong></h2><p>熟悉<code>php</code>基本语法的都应该知道<code>$</code>在其中的特殊意义。并且<code>php</code>支持使用变量的值作为变量名。举个例子，看如下图片</p>
-<p><img src="/.com//1.png" alt></p>
+<p><img src="/2018/11/20/变量覆盖/1.png" alt></p>
 <p>当变量<code>$a=&quot;b&quot;</code>时，再定义一个变量<code>$b=1</code>会发现<code>$$a==$b</code>是成立的。这种写法，将变量的值给注册成一个变量。算是一个前置知识吧。原因是<code>$$a</code>的意思就是将 <code>$a</code>的值注册成了变量<code>$b</code>所以输出<code>$b</code>的值其实就是输出<code>$$a</code>的值。</p>
-<p><img src="/.com//1-1.png" alt></p>
+<p><img src="/2018/11/20/变量覆盖/1-1.png" alt></p>
 <p>而<code>$$</code>这种方式是会产生变量覆盖的问题，例如</p>
-<p><img src="/.com//2.png" alt></p>
+<p><img src="/2018/11/20/变量覆盖/2.png" alt></p>
 <p>可以很明显的看到原先定义的<code>$a</code>被我们输入的a覆盖掉了，这就是<code>$$</code>变量覆盖的基本形式。有了变量覆盖，我们能做些什么？当然是绕过<code>waf</code>。</p>
 <p>如下实例代码和结果。</p>
-<p><img src="/.com//3.png" alt></p>
+<p><img src="/2018/11/20/变量覆盖/3.png" alt></p>
 <p>当传入的值存在<code>黑名单</code>里限制的字符串时，就将它替换为空，这里就假装模拟一下<code>sql</code>注入的某种<code>waf</code>。我们传入<code>select</code>由于存在<code>black_list</code>之中便将他过滤。那么我们利用变量覆盖来绕过它，如下图所示。</p>
-<p><img src="/.com//4.png" alt></p>
+<p><img src="/2018/11/20/变量覆盖/4.png" alt></p>
 <p>成功绕过了<code>waf</code>，我们 传入了<code>black_list[]=</code>使得黑名单数组被替换成了空，因此<code>select</code>得以逃脱。</p>
 <h2 id="extract-函数导致的变量覆盖问题"><a href="#extract-函数导致的变量覆盖问题" class="headerlink" title="extract()函数导致的变量覆盖问题"></a>extract()函数导致的变量覆盖问题</h2><p>先看看<code>extract</code>这个函数的定义和用法</p>
 <blockquote>
@@ -146,9 +146,9 @@
 <p>该函数返回成功导入到符号表中的变量数目。</p>
 </blockquote>
 </blockquote>
-<p><img src="/.com//5.png" alt></p>
+<p><img src="/2018/11/20/变量覆盖/5.png" alt></p>
 <p><code>extract</code>的用法就是将一个数组里的元素一个一个注册成变量。而这个函数和<code>GET</code>这个超全局变量结合起来就比较危险了，变得我们传入的值都会注册成变量，并且还会覆盖掉先前的值。</p>
-<p><img src="/.com//6.png" alt></p>
+<p><img src="/2018/11/20/变量覆盖/6.png" alt></p>
 <p><code>php</code>的开发者自然不会愚蠢成这样，<code>extract</code>可以指定一些其他的参数限制这类问题的发生。</p>
 <blockquote>
 <h2 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; extract(array,extract_rules,prefix)</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
@@ -180,9 +180,9 @@
 <h1 id="parse-str"><a href="#parse-str" class="headerlink" title="parse_str"></a>parse_str</h1><p>(PHP 4, PHP 5, PHP 7)</p>
 <p>parse_str — 将字符串解析成多个变量</p>
 </blockquote>
-<p><img src="/.com//7.png" alt></p>
+<p><img src="/2018/11/20/变量覆盖/7.png" alt></p>
 <p>可以看出，将我们输入的一串字符串解析成对应的变量。</p>
-<p><img src="/.com//8.png" alt></p>
+<p><img src="/2018/11/20/变量覆盖/8.png" alt></p>
 <p>不出意外的将实现定义好的<code>$a</code>覆盖成别的值了。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>目前在<code>CMS</code>遇到变量覆盖都是利用它进行<code>waf</code>绕过。而产生这一问题的是，以上总结的几个函数参数往往都是可控的，程序员在享受<code>php</code>的便利的同时，应该留意一下这是否会产生隐患吧。</p>
 

