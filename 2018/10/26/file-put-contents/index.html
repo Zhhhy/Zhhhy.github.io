@@ -119,7 +119,7 @@
 <a id="more"></a> 
 
 <p>首先,file_put_contents()这个函数的作用是什么?​    </p>
-<p><img src="file-put-contents/1.png" alt></p>
+<p><img src="/.com//1.png" alt></p>
 <p>这是w3school给出的介绍</p>
 <p>很明显它是给文件写入一个字符串..注意是文件!!!!!</p>
 <p>那其实很明了了,例如如下代码</p>
@@ -131,16 +131,16 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//localhost/test.php?text=%3C?php%20phpinfo();?%3E</span></span><br></pre></td></tr></table></figure>
 
 <p>我们查看一下同目录的config.php的内容</p>
-<p><img src="(E:file-put-contents/2.png" alt></p>
+<p><img src="/.com//2.png" alt></p>
 <p>发现phpinfo()成功被写入,并且执行</p>
-<p><img src="file-put-contents/3.png" alt></p>
+<p><img src="/.com//3.png" alt></p>
 <p>当然开发人员又不是个傻子,肯定不可能毫无防备的让你输入可以执行的php代码啊!</p>
 <p>按照我们正常,写入文件的一般只是普通的字母加数字,当然不排除需要一些特殊字符.</p>
 <p>假设正则表达式是这样的</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">preg_match(<span class="string">'[&lt;&gt;?]'</span>, $text)</span><br></pre></td></tr></table></figure>
 
 <p>测试一下正则的效果</p>
-<p><img src="file-put-contents/4.png" alt></p>
+<p><img src="/.com//4.png" alt></p>
 <p>那么怎么绕过这个正则呢?</p>
 <p>回到开头的那张图片..php函数的用法.</p>
 <p>其中它的data参数可以是数组.</p>
@@ -150,7 +150,7 @@
 
 
 <p>成功执行</p>
-<p>​     <img src="file-put-contents/5.png" alt></p>
+<p>​     <img src="/.com//5.png" alt></p>
 <p>关于正则觉得有必要好好学习啊!!</p>
 
         </section>

